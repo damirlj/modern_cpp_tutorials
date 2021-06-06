@@ -13,9 +13,9 @@
 #include <iostream>
 
 #include "JobQueue.h"
-#include "../Thread/ThreadWrapper.h"
+#include "ThreadWrapper.h"
 
-#include "../commons/Commons.h"
+#include "Commons.h"
 
 
 
