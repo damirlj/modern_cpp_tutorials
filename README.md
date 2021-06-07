@@ -15,7 +15,7 @@ Thanks in advance.
 
 ## Lesson1
 
-<b><color:blue>AOT – Active Object Thread</color></b> design pattern is introduced, as way to have asynchronous interthread communication, 
+<b>AOT – Active Object Thread</b> design pattern is introduced, as way to have asynchronous interthread communication, 
 delegating the tasks to the background thread, enqueuing them into the tasks queue.
 The thread drains the queue and provides the execution context, separate from the thread(s) from which 
 the tasks are sent, in which they will be executed sequentially, in order of arrival (FIFO).
