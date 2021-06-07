@@ -8,9 +8,9 @@ I’ve also used them to introduce the colleagues, as part of the internal discu
 in realization of the well know topics, like concurrency and new memory model, the power of callable objects and 
 functional programming, generics and algorithms – template metaprogramming, chrono library, etc.
 
-Please have in mind that using the code in commercial purposes is not allowed.
-Exposing them to the community is the way for getting the valuable feedback.
-Thanks in advance.
+Please have in mind that using the code in commercial purposes is not allowed.  
+Exposing them to the community is the way for getting the valuable feedback.  
+Thanks in advance.  
 
 
 ## Lesson1
@@ -24,5 +24,5 @@ through the communication channel (future).
 
 This concept is heavily used for interthread communication, especially for time consuming – blocking tasks that 
 are delegated to the background thread in asynchronous way, where order of execution is preserved (first came, first served).
-Typically, you would use this approach for producer-consumer scenarios
+Typically, you would use this approach for <i>producer-consumer</i> scenarios
 
