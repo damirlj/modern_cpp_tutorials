@@ -45,46 +45,68 @@ In pre C++17 times, that couldn’t be done elegant as with <i>if constexpr</i>
         // Tag dispatching in action 
         
         using string_tag_v = enum class StringTagValues : uint8_t
-        {
-                tag_string,
-                tag_numeric,
-                tag_invalid
-        };
-        using string_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_string>;
-        using numeric_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_numeric>;
-        using invalid_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_invalid>;
+       {
+               tag_string,
+               tag_numeric,
+               tag_enum,
+               tag_invalid
+       };
+
+       using string_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_string>;
+       using numeric_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_numeric>;
+       using enum_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_enum>;
+       using invalid_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_invalid>;
 
 
-        template <typename T>
-        std::string conv2string(const T& t, invalid_tag_t)
-        {
-            return {}; //type is not convertible to string
-        }
+       template <typename T>
+       std::string conv2string(const T& t, invalid_tag_t)
+       {
+           return {}; //type is not convertible to string
+       }
 
-        template <typename T>
-        std::string conv2string(const T& t, string_tag_t)
-        {
-            return t;
-        }
+       template <typename T>
+       std::string conv2string(const T& t, string_tag_t)
+       {
+           return t;
+       }
 
-        template <typename T>
-        std::string conv2string(const T& t, numeric_tag_t)
-        {
-            return std::to_string(t);
-        }
+       template <typename T>
+       std::string conv2string(const T& t, numeric_tag_t)
+       {
+           return std::to_string(t);
+       }
+
+       template <typename T>
+       std::string conv2string(const T& t, enum_tag_t)
+       {
+           const auto e = static_cast<std::underlying_type_t<T>>(t);
+                      /*
+            * @note: for some compiler the sign promotion may happen
+            * enum class : uint8_t
+            * passing the scoped enum to std::to_string() may invoke singed promotion, i.e.
+            * std::to_string(int) overloading will be called instead of expected std::to_string(unsigned)
+            * In case that is building process set to fail on any compiler issues, additional 
+            * cast to double is required
+            * std::to_string(static_cast<double>(e));
+           */
+           return std::to_string(e); 
+       }
 
 
-        template <typename T>
-        std::string conv2string(const T& t)
-        {
-            return conv2string(t,
-                    std::integral_constant<string_tag_v,
-                            (std::is_same<std::decay_t<T>, std::string>::value ||
-                             std::is_constructible<std::string, T>::value ||
-                             std::is_convertible<T, std::string>::value) ? string_tag_v::tag_string :
-                             std::is_arithmetic<std::decay_t<T>>::value ? string_tag_v::tag_numeric : string_tag_v::tag_invalid
-                        >{});
-        }
+       template <typename T>
+       std::string conv2string(const T& t)
+       {
+           return conv2string(t,
+                   std::integral_constant<string_tag_v,
+                           (std::is_same<std::decay_t<T>, std::string>::value ||
+                            std::is_constructible<std::string, T>::value ||
+                            std::is_convertible<T, std::string>::value) ? string_tag_v::tag_string :
+                            std::is_arithmetic<std::decay_t<T>>::value ? string_tag_v::tag_numeric :
+                            std::is_enum<std::decay_t<T>>::value ? string_tag_v::tag_enum :  
+                            string_tag_v::tag_invalid
+                       >{});
+       }
+
 </div>
    
 
