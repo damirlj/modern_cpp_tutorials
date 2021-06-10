@@ -80,7 +80,7 @@ In pre C++17 times, that couldn’t be done elegant as with <i>if constexpr</i>
        std::string conv2string(const T& t, enum_tag_t)
        {
            const auto e = static_cast<std::underlying_type_t<T>>(t);
-                      /*
+           /*
             * @note: for some compiler the sign promotion may happen
             * enum class : uint8_t
             * passing the scoped enum to std::to_string() may invoke singed promotion, i.e.
