@@ -17,7 +17,7 @@
 namespace utils::log
 {
     template <typename T>
-    constexpr bool is_string = std::is_same_v<std::string, std::decay_t<T>> ||
+    inline constexpr bool is_string = std::is_same_v<std::string, std::decay_t<T>> ||
                                std::is_constructible_v<std::string, T> ||
                                std::is_convertible_v<T, std::string>;
 
