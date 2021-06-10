@@ -14,10 +14,9 @@
 #include <type_traits>
 #include <memory>
 
-#include "DataLogger.h"
-
+#include "../src/AOT/AOThread.h"
+#include "../src/Logging/DataLogger.h"
 #include "File.h"
-#include "AOThread.h"
 
 
 namespace utils::log

@@ -4,8 +4,8 @@
 #include <functional>
 
 
-#include "ConsoleLogger.h"
 #include "AOThread.h"
+#include "ConsoleLogger.h"
 
 
 

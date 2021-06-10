@@ -5,7 +5,7 @@
  *      Author: <a href="mailto:damirlj@yahoo.com">Damir Ljubic</a>
  */
 
-#include "FileLogger.h"
+#include "../src/Logging/FileLogger.h"
 
 using namespace utils::log;
 

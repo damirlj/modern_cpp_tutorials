@@ -11,6 +11,7 @@
 #include <iostream>
 #include <string>
 
+// Application
 #include "ClassLevelMutex.h"
 
 namespace utils::log
@@ -46,8 +47,8 @@ namespace utils::log
 
             void log(const std::string& msg) const noexcept
             {
-                std::lock_guard<mutex> lock {lock_t::instance()};
-				
+                std::lock_guard<lock_t> lock {lock_t::instance()};
+
                 std::cout << msg << std::endl;
             }
     };
