@@ -40,48 +40,47 @@ This is small demonstration of using type traits with generic programming, where
 either converted to string (numeric values ), or expecting java-like user-defined types with public non-static member method “toString()”
 In pre C++17 times, that couldn’t be done elegant as with <i>if constexpr</i>
 <div>
-using string_tag_v = enum class StringTagValues : uint8_t
-{
-        tag_string,
-        tag_numeric,
-        tag_invalid
-};
-using string_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_string>;
-using numeric_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_numeric>;
-using invalid_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_invalid>;
- 
- 
-template <typename T>
-std::string conv2string(const T& t, invalid_tag_t)
-{
-    return {}; //type is not convertible to string
-}
- 
-template <typename T>
-std::string conv2string(const T& t, string_tag_t)
-{
-    return t;
-}
- 
-template <typename T>
-std::string conv2string(const T& t, numeric_tag_t)
-{
-    return std::to_string(t);
-}
- 
- 
-template <typename T>
-std::string conv2string(const T& t)
-{
-    return conv2string(t,
-            std::integral_constant<string_tag_v,
-                    (std::is_same<std::decay_t<T>, std::string>::value ||
-                     std::is_constructible<std::string, T>::value ||
-                     std::is_convertible<T, std::string>::value) ? string_tag_v::tag_string :
-                     std::is_arithmetic<std::decay_t<T>>::value ? string_tag_v::tag_numeric : string_tag_v::tag_invalid
-                >{});
-}
+        using string_tag_v = enum class StringTagValues : uint8_t
+        {
+                tag_string,
+                tag_numeric,
+                tag_invalid
+        };
+        using string_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_string>;
+        using numeric_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_numeric>;
+        using invalid_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_invalid>;
 
+
+        template <typename T>
+        std::string conv2string(const T& t, invalid_tag_t)
+        {
+            return {}; //type is not convertible to string
+        }
+
+        template <typename T>
+        std::string conv2string(const T& t, string_tag_t)
+        {
+            return t;
+        }
+
+        template <typename T>
+        std::string conv2string(const T& t, numeric_tag_t)
+        {
+            return std::to_string(t);
+        }
+
+
+        template <typename T>
+        std::string conv2string(const T& t)
+        {
+            return conv2string(t,
+                    std::integral_constant<string_tag_v,
+                            (std::is_same<std::decay_t<T>, std::string>::value ||
+                             std::is_constructible<std::string, T>::value ||
+                             std::is_convertible<T, std::string>::value) ? string_tag_v::tag_string :
+                             std::is_arithmetic<std::decay_t<T>>::value ? string_tag_v::tag_numeric : string_tag_v::tag_invalid
+                        >{});
+        }
 </div>
    
 
