@@ -39,6 +39,7 @@ They are heavily used in template metaprogramming in various scenarios:
 This is small demonstration of using type traits with generic programming, where the type needs to be logged to logging medium
 either converted to string (numeric values ), or expecting java-like user-defined types with public non-static member method “toString()”
 In pre C++17 times, that couldn’t be done elegant as with <i>if constexpr</i>
+
 <div>
         using string_tag_v = enum class StringTagValues : uint8_t
         {
