@@ -3,8 +3,8 @@
 // Author: <a href="mailto:damirlj@yahoo.com">Damir Ljubic</a>
 //
 
-#ifndef AIRPLAYSERVICE_LOGGINGHELPER_H
-#define AIRPLAYSERVICE_LOGGINGHELPER_H
+#ifndef LOGGINGHELPER_H
+#define LOGGINGHELPER_H
 
 #include <string>
 #include <type_traits>
@@ -12,7 +12,7 @@
 #include <utility>
 
 // Application
-#include "../src/commons/Commons.h"
+#include "Commons.h"
 
 namespace utils::log
 {
@@ -42,6 +42,7 @@ namespace utils::log
      *
      * it will return the value, if the value itself is std::string convertible.
      * If it's numeric type, or enum class - std::to_string() conversion function will be called.
+     * For java-like custom types with non-static member public toString() method will be invoked.
      * Otherwise, the empty string will be returned
      *
      */
@@ -76,4 +77,4 @@ namespace utils::log
         return {};
     }
 }
-#endif //AIRPLAYSERVICE_LOGGINGHELPER_H
+#endif //LOGGINGHELPER_H
