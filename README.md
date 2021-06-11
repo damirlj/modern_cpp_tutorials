@@ -13,7 +13,7 @@ Exposing them to the community is the way for getting the valuable feedback.
 Thanks in advance.  
 
 
-## Lesson1
+## Tutorial 1
 
 <b>AOT – Active Object Thread</b> design pattern is introduced, as way to have asynchronous interthread communication, 
 delegating the tasks to the background thread, enqueuing them into the tasks queue.
@@ -27,7 +27,7 @@ are delegated to the background thread in asynchronous way, where order of execu
 Typically, you would use this approach for <i>producer-consumer</i> scenarios
 
 
-## Lesson2
+## Tutorial 2
 <b>Type traits</b> are small objects for inspecting the type (rather than value) at compile time.
 I’ve first encountered the type traits like constructs with “Modern C++ Design” from A. Aleksandrescu and his Loki library.
 They are heavily used in template metaprogramming in various scenarios:
