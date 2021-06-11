@@ -5,8 +5,8 @@
  *      Author: <a href="mailto:damirlj@yahoo.com">Damir Ljubic</a>
  */
 
-#ifndef LOGGING_LOGGER_H_
-#define LOGGING_LOGGER_H_
+#ifndef LOGGER_MIX_H_
+#define LOGGER_MIX_H_
 
 #include <string>
 #include <tuple>
@@ -19,7 +19,7 @@ namespace utils::log
 	 * For logging parallel on a different logging mediums	
 	*/
     template<class...Policies>
-    class Logger final : public Policies...
+    class LoggerMix final : public Policies...
     {
         public:
 

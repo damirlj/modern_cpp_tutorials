@@ -76,7 +76,7 @@ namespace utils::aot
 
                      result = job.get_future();
                      value_type task { std::bind(std::move(job), std::forward<Args>(args)...)};
-                     push(std::move(task));
+                     this->push(std::move(task));
                 }
 
                 m_condition.notify_one();

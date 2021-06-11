@@ -1,15 +1,14 @@
-/*
- * DataLogger.h
- *
- *  Created on: Feb 14, 2021
- *      Author: <a href="mailto:damirlj@yahoo.com">Damir Ljubic</a>
- */
+//
+// <author> damirlj@yahoo.com
+// Copyright (c) 2021. All rights reserved!
+//
 
 #ifndef LOGGING_DATALOGGER_H_
 #define LOGGING_DATALOGGER_H_
 
 namespace utils::log
 {
+
     template<class T>
     class ILoggerL
     {
@@ -35,7 +34,8 @@ namespace utils::log
 
             ILoggerR() = default;
     };
-}
+
+}//namespace: utils::log
 
 
 
