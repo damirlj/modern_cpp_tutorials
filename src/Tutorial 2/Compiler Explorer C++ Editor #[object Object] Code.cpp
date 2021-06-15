@@ -25,7 +25,7 @@ inline  constexpr bool is_byte_compatible_v = is_byte_compatible<T>::value;
  * Helper method for converting byte to string representation
  */
 template <typename T, typename = std::enable_if_t<is_byte_compatible_v<T>>>
-std::string byte2string(T byte, const std::string_view& fmt)
+std::string byte2string(T byte, std::string_view fmt)
 {
     
     char buff[fmt.size()] = {0};
@@ -53,7 +53,7 @@ std::string bytes2string(const Container<T>& bytes)
 
     std::for_each(bytes.cbegin()
     , bytes.cend()
-    , [&s, &fmt](const T& byte) mutable 
+    , [&s, fmt](const T& byte) mutable 
     {
         s.append(byte2string(byte, fmt));
     });
