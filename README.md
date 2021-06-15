@@ -29,7 +29,7 @@ Typically, you would use this approach for <i>producer-consumer</i> scenarios
 
 ## Tutorial 2
 <b>Type traits</b> are small objects for inspecting the type (rather than value) at compile time.
-I’ve first encountered the type traits like constructs with “Modern C++ Design” from A. Aleksandrescu and his Loki library.
+I’ve first encountered the type traits like constructs with [“Modern C++ Design”](https://en.wikipedia.org/wiki/Modern_C%2B%2B_Design) from A. Aleksandrescu and his Loki library.
 They are heavily used in template metaprogramming in various scenarios:
 -	For SFINAE: imposing the template parameter substitution constraints: which types can be potentially consider as a valid for template parameter substitution (instantiation) both, as argument or return values.
 -	For checking compile time condition that are type related (if constexpr)
