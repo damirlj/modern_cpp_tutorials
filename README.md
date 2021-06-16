@@ -22,9 +22,11 @@ the tasks are sent, in which they will be executed sequentially, in order of arr
 The caller thread can be also synchronized on result of task being executed, waiting on signaling the execution completion 
 through the communication channel (future).
 
-This concept is heavily used for interthread communication, especially for time consuming – blocking tasks that 
-are delegated to the background thread in asynchronous way, where order of execution is preserved (first came, first served).
-Typically, you would use this approach for <i>producer-consumer</i> scenarios
+This concept is heavily used for asynchronous massage-based interthread communication, especially for time consuming – blocking tasks that are delegated to the background thread in asynchronous way, where order of execution is preserved (first came, first served).    
+Typically, you would use this approach for
+
+* <i>Producer-consumer</i> scenarios (audio, video streaming, etc.)
+* [Actor model](https://en.wikipedia.org/wiki/Actor_model)
 
 
 ## Tutorial 2
