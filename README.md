@@ -11,6 +11,8 @@ functional programming, generics and algorithms – template metaprogramming, ch
 Please have in mind that using the code in commercial purposes is not allowed.  
 Exposing them to the community is the way for getting the valuable feedback.  
 Thanks in advance.  
+    
+>[Contact](damirlj@yahoo.com)
 
 
 ## Tutorial 1
