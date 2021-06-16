@@ -29,6 +29,7 @@ Typically, you would use this approach for
 
 * <i>Producer-consumer</i> scenarios (audio, video streaming, etc.)
 * [Actor model](https://en.wikipedia.org/wiki/Actor_model)
+    * example: [Arataga](https://github.com/Stiffstream/arataga)
 
 
 ## Tutorial 2
@@ -95,16 +96,21 @@ In pre C++17 times, that couldn’t be done elegant as with <i>if constexpr</i>
            */
            return std::to_string(e); 
        }
-
+       
+       template <typename T>
+       struct is_string_compatible
+       {
+          static constexpr bool value = std::is_same<std::decay_t<T>, std::string>::value ||
+                            std::is_constructible<std::string, T>::value ||
+                            std::is_convertible<T, std::string>::value;
+       };
 
        template <typename T>
        std::string conv2string(const T& t)
        {
            return conv2string(t,
                    std::integral_constant<string_tag_v,
-                           (std::is_same<std::decay_t<T>, std::string>::value ||
-                            std::is_constructible<std::string, T>::value ||
-                            std::is_convertible<T, std::string>::value) ? string_tag_v::tag_string :
+                            is_string_compatible<T>::value ? string_tag_v::tag_string :
                             std::is_arithmetic<std::decay_t<T>>::value ? string_tag_v::tag_numeric :
                             std::is_enum<std::decay_t<T>>::value ? string_tag_v::tag_enum :  
                             string_tag_v::tag_invalid
