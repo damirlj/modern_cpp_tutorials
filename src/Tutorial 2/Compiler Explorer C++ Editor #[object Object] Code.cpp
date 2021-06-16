@@ -50,6 +50,7 @@ std::string bytes2string(const Container<T>& bytes)
 {
     std::string s;
     constexpr std::string_view fmt {"0x%02X, "};
+    s.reserve(bytes.size() * fmt.size());
 
     std::for_each(bytes.cbegin()
     , bytes.cend()
