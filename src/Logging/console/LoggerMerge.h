@@ -1,15 +1,18 @@
 /*
- * Logger.h
+ * LoggingMerge.h
  *
  *  Created on: Jan 31, 2021
  *      Author: <a href="mailto:damirlj@yahoo.com">Damir Ljubic</a>
  */
 
-#ifndef LOGGER_MERGE_H_
-#define LOGGER_MERGE_H_
+#ifndef LOGGING_MERGE_H_
+#define LOGGING_MERGE_H_
 
 #include <string>
 #include <tuple>
+
+#include "Logger.h"
+#include "LoggingHelper.h"
 
 
 namespace utils::log
@@ -19,27 +22,30 @@ namespace utils::log
 	 * For parallel logging on different logging mediums	
 	*/
     template<class...Policies>
-    class LoggerMerge final : public Policies...
+    class LoggingMerge final : public Policies...
     {
         public:
 
             using policy_t = std::tuple<Policies...>;
 
-            LoggerMerge(): m_policies{Policies{}...}//default, parameterless c-tors
+            LoggingMerge(): m_policies{Policies{}...}//default, parameterless c-tors
             {}
 
-            void log(const std::string& msg)
+			template <typename T, string_t<T>>
+            void log(log_verbosity_t verbosity, T&& msg)
             {
                 for (auto i = 0; i < nPolicies; ++i)
                 {
-                    std::get<i>(m_policies).log(msg);
+                    std::get<i>(m_policies).log(verbosity, std::forward<T>(msg));
                 }
             }
 
-            void log(std::size_t policy, const std::string& msg)
+			template <typename T, string_t<T>>
+            void log(std::size_t policy, log_verbosity_t verbosity, T&& msg)
             {
                 if (policy >= nPolicies) throw std::out_of_range("Policy index out of range!");
-                std::get<policy>(m_policies).log(msg);
+				
+                std::get<policy>(m_policies).log(verbosity, std::forward<T>(msg));
             }
 
         private:
@@ -50,4 +56,4 @@ namespace utils::log
 }
 
 
-#endif /*LOGGER_MERGE_H_ */
+#endif /*LOGGING_MERGE_H_*/

@@ -30,6 +30,7 @@ namespace utils::log
      */
     template <class T, class=void>
     struct has_to_string : std::false_type {};
+	
     template <class T>
     struct has_to_string<T, std::void_t<decltype(&T::toString)>> : std::is_same<std::string
             , decltype(std::declval<T&>().toString())> {};
