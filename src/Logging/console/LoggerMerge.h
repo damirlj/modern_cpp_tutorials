@@ -5,8 +5,8 @@
  *      Author: <a href="mailto:damirlj@yahoo.com">Damir Ljubic</a>
  */
 
-#ifndef LOGGER_MIX_H_
-#define LOGGER_MIX_H_
+#ifndef LOGGER_MERGE_H_
+#define LOGGER_MERGE_H_
 
 #include <string>
 #include <tuple>
@@ -16,16 +16,16 @@ namespace utils::log
 {
 
 	/**
-	 * For logging parallel on a different logging mediums	
+	 * For parallel logging on different logging mediums	
 	*/
     template<class...Policies>
-    class LoggerMix final : public Policies...
+    class LoggerMerge final : public Policies...
     {
         public:
 
             using policy_t = std::tuple<Policies...>;
 
-            Logger(): m_policies{Policies{}...}//default, parameterless c-tors
+            LoggerMerge(): m_policies{Policies{}...}//default, parameterless c-tors
             {}
 
             void log(const std::string& msg)
@@ -50,4 +50,4 @@ namespace utils::log
 }
 
 
-#endif /* LOGGING_LOGGER_H_ */
+#endif /*LOGGER_MERGE_H_ */
