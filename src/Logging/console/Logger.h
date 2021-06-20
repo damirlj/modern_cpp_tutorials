@@ -141,7 +141,7 @@ namespace utils::log
                 }
                 catch(const std::exception& e)
                 {
-                    (void)fprintf(stderr, "<Error> %s", e.what());//unit test
+                    (void)fprintf(stderr, "<Error> %s", e.what());//unit testing
                 }
             }
 

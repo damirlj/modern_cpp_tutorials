@@ -18,9 +18,9 @@
 namespace utils::log
 {
 
-	/**
-	 * For parallel logging on different logging mediums	
-	*/
+    /**
+     * For parallel logging on different logging mediums	
+    */
     template<class...Policies>
     class LoggingMerge final : public Policies...
     {
@@ -31,7 +31,7 @@ namespace utils::log
             LoggingMerge(): m_policies{Policies{}...}//default, parameterless c-tors
             {}
 
-			template <typename T, string_t<T>>
+            template <typename T, string_t<T>>
             void log(log_verbosity_t verbosity, T&& msg)
             {
                 for (auto i = 0; i < nPolicies; ++i)
@@ -40,11 +40,11 @@ namespace utils::log
                 }
             }
 
-			template <typename T, string_t<T>>
+            template <typename T, string_t<T>>
             void log(std::size_t policy, log_verbosity_t verbosity, T&& msg)
             {
                 if (policy >= nPolicies) throw std::out_of_range("Policy index out of range!");
-				
+                
                 std::get<policy>(m_policies).log(verbosity, std::forward<T>(msg));
             }
 
