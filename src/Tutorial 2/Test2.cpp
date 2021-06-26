@@ -59,7 +59,7 @@ std::string bytes2string(const Container<T>& bytes)
         s.append(byte2string(byte, fmt));
     });
 
-    s.resize(s.size() - 2);//remove trailing delimeters for the last entry
+    s.erase(s.size() - 2);//remove trailing delimeters for the last entry
     
     return s;
 }
