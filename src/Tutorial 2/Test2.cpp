@@ -1,4 +1,3 @@
-
 #include <type_traits>
 #include <cstddef>
 #include <algorithm>
@@ -7,6 +6,10 @@
 #include <string_view>
 #include <vector>
 #include <iostream>
+
+#include <sstream>
+#include <iterator>
+#include <iomanip>
 
 
 template<typename T>
@@ -64,6 +67,41 @@ std::string bytes2string(const Container<T>& bytes)
     return s;
 }
 
+
+/*
+* Alternative way which employs iterators and streams
+*/
+template <typename Iterator>
+std::string iterable2string(Iterator first, Iterator last)
+{
+    using namespace std;
+    
+    stringstream ss;
+
+    using iterator_t = decay_t<decltype(*first)>;
+
+    std::for_each(first, last, [&ss](const auto& value) mutable {
+         
+        ss << setw(2);
+        ss << setfill('0');
+        if constexpr (std::is_same_v<iterator_t, std::byte>)
+        {
+            ss << hex << to_integer<int>(value) << ", ";
+        }
+        else
+        {
+            ss << hex << static_cast<int>(value) << ", ";
+        }
+        
+      
+    });
+ 
+    auto s = ss.str();
+    s.erase(s.size() - 2);
+
+    return s;
+}
+
 /*
  * Helper function for generating the std::byte array
  * from underlying type (unsigned char)
@@ -81,9 +119,11 @@ int main()
     const std::vector<std::uint8_t> in {2, 11, 37, 221, 26};//@note const auto in - will be deduced to initializer_list<int>
 
     cout << bytes2string(in) << endl;
+    cout << iterable2string(in.begin(), in.end()) << endl;
 
-    cout << bytes2string( make_byte_arr(0x00, 0x12, 0xA2, 0x43, 0x37, 0x2A)) << endl;
+    const auto bytes = make_byte_arr(0x00, 0x12, 0xA2, 0x43, 0x37, 0x2A);
+    cout << bytes2string(bytes) << endl;
+    cout << iterable2string(bytes.begin(), bytes.end()) << endl;
     
     return 0;
 }
-
