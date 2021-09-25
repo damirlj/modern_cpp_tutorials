@@ -45,7 +45,7 @@ This is small demonstration of using type traits with generic programming, where
 either converted to string (numeric values ), or expecting java-like user-defined types with public non-static member method “toString()”
 In pre C++17 times, that couldn’t be done elegant as with <i>if constexpr</i>
 
-<div>
+```
        
         // Tag dispatching in action 
         
@@ -117,6 +117,179 @@ In pre C++17 times, that couldn’t be done elegant as with <i>if constexpr</i>
                        >{});
        }
 
-</div>
-   
+```
+
+## Tutorial 3
+
+### Tuples
+
+Although I myself don't use tuples so frequently in everyday practice, it is sometime 
+quite useful to employ this data structure, so I’ve decided to introduce some use-cases, at least 
+to some of You who never encountered std::tuple in this  particular scenarios.
+
+**First scenario** would be if there is some repetitive assignment work, which is non-trivial, because you have 
+some nullable, std::optional-like custom data type that may look like
+```
+template <typename T>
+struct Optional
+{
+    bool valid;
+    T value;
+    …
+};
+```
+Appealing characteristic of std::tuple, is that it's fixed-size heterogenous data structure – it can hold different data types.
+We can write a generic class, with variadic number of parameters, stored into tuple by reference.
+To do that, we use std::tie() call
+
+```
+    template <class T, class = void>
+    struct is_optional_t : std::false_type {};
+
+    template <class T>
+    struct is_optional_t<T
+                         , std::void_t<decltype(T::valid),
+                                       decltype(T::value)>> : std::true_type {};
+                                       
+    template <typename...Args>
+    class Setter
+    {
+        public:
+
+            explicit Setter(Args&...args): m_values(std::tie(args...))
+            {}
+            explicit Setter(std::tuple<Args&...>& values) : m_values(values)
+            {}
+
+            template <std::size_t I, typename Value>
+            Setter& set(Value&& value)
+            {
+
+                /*
+                 * This is firstly meant for a non-trivial assignments, that are tedious to
+                 * write by hand
+                 *
+                 */
+                auto& opt = std::get<I>(m_values);
+                if constexpr (is_optional_t<Value>::value)
+                {
+                    // In case that there is no proper c-tor
+                    opt.valid = true;
+                    opt.value = std::forward<Value>(value).value;
+                }
+                else
+                {
+                    opt = std::forward<Value>(value);
+                }
+                
+                return *this;
+            }
+
+            …
+
+        private:
+
+            std::tuple<Args&...> m_values; // Store arguments by reference!
+            static constexpr size_t N = sizeof...(Args);
+
+    };
+```
+
+**Second use-case** would be for user-defined types, where you want to provide class specific 
+*“less than”* comparison operator, in order to be able to sort the collection of this type using f.e. *std::sort*.
+To accomplish this task, one can utilize on the std::tuple internal implementation of comparison 
+operators, which are of lexicographical (alphabetical) ordering type.
+This way, you just wrap your type into std::tuple, instead of writing your own comparison logic, which can be tedious and 
+sometime also error-pron task
+
+
+Consider having simple class which represents the person
+
+```
+    class Person
+    {
+        public:
+
+            Person(int _age, std::string _name, gender_t _gender):
+                age(_age)
+                , name(_name)
+                , gender(_gender)
+            {}
+
+            std::string getName() const { return name;}
+            int getAge() const { return age;}
+            gender_t getGender() const { return gender;}
+
+        private:
+
+            int age;
+            std::string name;
+            gender_t gender;
+    };
+
+    std::ostream& operator << (std::ostream& out, const Person& p)
+    {
+        return out << "Name=" << p.getName()
+                   << ", Age=" << p.getAge()
+                   << ", gender=" << printEnum(p.getGender())
+                   ;
+    }
+    
+    /*
+    * You can choose class scope - unary, or binary version of 
+    * the operator <
+    * The binary version can be implemented also as the friend function, and 
+    * wrap the private members as references within std::tie,
+    * instead of use the copied values with std::make_tuple
+    */
+    bool operator < (const Person& p1, const Person& p2)
+    {
+        /*
+         * Lexicographic ordering
+         *
+         * It's relying on the std::tuple internal implementation of the
+         * comparison operator ("less than"), instead of writing your own tedious,
+         * and error-pron code
+         *
+         */
+        return std::make_tuple(p1.getAge(), p1.getName(), p1.getGender()) <
+               std::make_tuple(p2.getAge(), p2.getName(), p2.getGender());
+    }
+```
+In most cases that would be sufficient.
+On the other hand, there is no garantie of the semantical-logical correctness of the comparison.
+Take for instance this example
+
+```
+    struct Point { int x, y;};
+    
+    Writing something like
+     
+    bool operator < (const Point& p1, const Point& p2)
+    {
+         return (p1.x < p2.x) && (p1.y < p2.y);
+    }
+    
+    is wrong, in terms of the points in Descartes coordinate system
+    Instead, the correct comparison would be
+    bool operator < (const Point& p1, const Point& p2)
+    {
+           // Distance from (0,0)
+           return (p1.x * p1.x + p1.y * p1.y) < (p2.x * p2.x + p2.y * p2.y);
+    }
+    
+    If you want to rely on the lexicographical (alphabetical) ordering,
+    you would need manually write, something like
+    
+    bool operator < (const Point& p1, const Point& p2)
+    {
+         if (p1.x < p2.x) return true;
+         if (p1.y > p2.y) return false;
+         return p1.x < p2.x;
+    }
+    
+    which, by the way, also give you an unsatisfactory result (doesn't concern the
+    coordinates as absolute distance from (0,0)).
+    
+```
 
