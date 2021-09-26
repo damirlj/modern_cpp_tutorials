@@ -43,7 +43,7 @@ They are heavily used in template metaprogramming in various scenarios:
 
 This is small demonstration of using type traits with generic programming, where the type needs to be logged to logging medium
 either converted to string (numeric values ), or expecting java-like user-defined types with public non-static member method “toString()”
-In pre C++17 times, that couldn’t be done elegant as with <i>if constexpr</i>
+In pre C++17 times, that couldn’t be done elegant as with compile time <i>if constexpr</i> check
 
 ```
        
@@ -139,8 +139,8 @@ struct Optional
 };
 ```
 Appealing characteristic of std::tuple, is that it's fixed-size heterogenous data structure – it can hold different data types.
-We can write a generic class, with variadic number of parameters, stored into tuple by reference.
-To do that, we use std::tie() call
+We can write a generic class, with variadic number of parameters, stored into tuple as lvalue references.
+To do that, we use *std::tie()* call
 
 ```
     template <class T, class = void>
@@ -189,16 +189,17 @@ To do that, we use std::tie() call
 
         private:
 
-            std::tuple<Args&...> m_values; // Store arguments by reference!
+            std::tuple<Args&...> m_values; // Store arguments as lvalue references!
             static constexpr size_t N = sizeof...(Args);
 
     };
 ```
 
 **Second use-case** would be for user-defined types, where you want to provide class specific 
-*“less than”* comparison operator, in order to be able to sort the collection of this type using f.e. *std::sort*.
-To accomplish this task, one can utilize on the std::tuple internal implementation of comparison 
-operators, which are of lexicographical (alphabetical) ordering type.
+*“less than”* comparison operator, in order to be able to ascending sort the collection of this type using f.e. *std::sort*
+algorithm.
+>To accomplish this task, one can utilize on the std::tuple internal implementation of comparison 
+operators, which is known as *lexicographical (alphabetical) ordering*.
 This way, you just wrap your type into std::tuple, instead of writing your own comparison logic, which can be tedious and 
 sometime also error-pron task
 
@@ -292,4 +293,6 @@ Take for instance this example
     coordinates as absolute distance from (0,0)).
     
 ```
+
+Check the source code for more details on this topic.
 
