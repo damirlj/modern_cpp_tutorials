@@ -35,8 +35,7 @@ namespace test::tuples
         if constexpr (is_iterable<T>::value && !is_string_v<T>)
         {
             using value_t = std::decay_t<decltype(*el.begin())>;
-            std::copy(el.cbegin(), el.cend(), std::ostream_iterator<value_t>(std::cout, "\n"));
-            std::cout << '\n';
+            std::copy(el.cbegin(), el.cend(), std::ostream_iterator<value_t>(std::cout, "\n"));  
         }
         else
         {
