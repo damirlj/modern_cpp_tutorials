@@ -201,7 +201,7 @@ algorithm.
 >To accomplish this task, one can utilize on the std::tuple internal implementation of comparison 
 operators, which is known as *lexicographical (alphabetical) ordering*.
 This way, you just wrap your type into std::tuple, instead of writing your own comparison logic, which can be tedious and 
-sometime also error-pron task
+sometime also error-prone task
 
 
 Consider having simple class which represents the person
@@ -250,7 +250,7 @@ Consider having simple class which represents the person
          *
          * It's relying on the std::tuple internal implementation of the
          * comparison operator ("less than"), instead of writing your own tedious,
-         * and error-pron code
+         * and error-prone code
          *
          */
         return std::make_tuple(p1.getAge(), p1.getName(), p1.getGender()) <
