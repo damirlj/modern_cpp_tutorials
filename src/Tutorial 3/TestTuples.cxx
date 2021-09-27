@@ -41,7 +41,7 @@ namespace test::tuples
 
             Person(int _age, std::string _name, gender_t _gender):
                 age(_age)
-                , name(_name)
+                , name(std::move(_name))
                 , gender(_gender)
             {}
 
