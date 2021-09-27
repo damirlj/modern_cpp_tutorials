@@ -19,7 +19,7 @@ Thanks in advance.
 
 <b>AOT – Active Object Thread</b> design pattern is introduced, as way to have asynchronous interthread communication, 
 delegating the tasks to the background thread, enqueuing them into the tasks queue.
-The thread drains the queue and provides the execution context, separate from the thread(s) from which 
+The thread drains the queue and provides the execution context, a separate one from the thread(s) from which 
 the tasks are sent, in which they will be executed sequentially, in order of arrival (FIFO).
 The caller thread can be also synchronized on result of task being executed, waiting on signaling the execution completion 
 through the communication channel (future).
@@ -34,7 +34,7 @@ Typically, you would use this approach for
 
 ## Tutorial 2
 <b>Type traits</b> are small objects for inspecting the type (rather than value) at compile time.
-I’ve first encountered the type traits like constructs with [“Modern C++ Design”](https://en.wikipedia.org/wiki/Modern_C%2B%2B_Design) from A. Aleksandrescu and his Loki library.
+I’ve first encountered the type traits like constructs in [“Modern C++ Design”](https://en.wikipedia.org/wiki/Modern_C%2B%2B_Design) introduced by A. Aleksandrescu and his Loki library.
 They are heavily used in template metaprogramming in various scenarios:
 -	For SFINAE: imposing the template parameter substitution constraints: which types can be potentially consider as a valid for template parameter substitution (instantiation) both, as argument or return values.
 -	For checking compile time condition that are type related (if constexpr)
@@ -125,7 +125,7 @@ In pre C++17 times, that couldn’t be done elegant as with compile time <i>if c
 
 Although I myself don't use tuples so frequently in everyday practice, it is sometime 
 quite useful to employ this data structure, so I’ve decided to introduce some use-cases, at least 
-to some of You who never encountered std::tuple in this  particular scenarios.
+to some of You who never encountered std::tuple in this particular scenarios.
 
 **First scenario** would be if there is some repetitive assignment work, which is non-trivial, because you have 
 some nullable, std::optional-like custom data type that may look like
@@ -173,7 +173,7 @@ To do that, we use *std::tie()* call
                 auto& opt = std::get<I>(m_values);
                 if constexpr (is_optional_t<Value>::value)
                 {
-                    // In case that there is no proper c-tor
+                    // In case that there is no proper c-tor: for POD like type
                     opt.valid = true;
                     opt.value = std::forward<Value>(value).value;
                 }
@@ -213,7 +213,7 @@ Consider having simple class which represents the person
 
             Person(int _age, std::string _name, gender_t _gender):
                 age(_age)
-                , name(_name)
+                , name(std::move(_name))
                 , gender(_gender)
             {}
 
