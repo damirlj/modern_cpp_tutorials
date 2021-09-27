@@ -71,7 +71,7 @@ namespace test::tuples
          *
          * It's relying on the std::tuple internal implementation of the
          * comparison operator ("less than"), instead of writing your own tedious,
-         * and error-pron code
+         * and error-prone code
          *
          */
         return std::make_tuple(p1.getAge(), p1.getName(), p1.getGender()) <
@@ -109,15 +109,17 @@ namespace test::tuples
 
         std::cout << "Universal setter:\n\n";
 
-        Setter setter {age, name, arr, shoolClass};
-        setter.set<0>(7)
+        {
+            Setter setter {age, name, arr, shoolClass};
+            setter.set<0>(7)
               .set<1>("Alex")
               .set<2>(std::vector<int>{1, 2, 3})
               .set<3>(Optional<std::string>{.value = std::string("1D")})
               //.set<3>(std::string("1D")) //with proper c-tor
               ;
 
-        setter.print2Console();
+            setter.print2Console();
+        }
 
         std::cout << "\nSetting by references:\n\n";
 
