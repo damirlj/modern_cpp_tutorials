@@ -322,10 +322,10 @@ persons.stream()
               .collect(Collectors.toList());
 ```
 
-Here, instead of being burden with implementation details ("how" the operators are implemented) - imperative programming, 
-we are more focused on "what" should be done, as with declarative programming - expressing our intentions with callable objects 
+Here, instead of being burden with implementation details (_"how"_ the operators are implemented) - imperative programming, 
+we are more focused on _"what"_ should be done, as with declarative programming - expressing our intentions with callable objects 
 on a chained operators. You can think of it as Strategy design pattern.
-Talking on desing patterns, there is **ReactiveX** library. It's basically an implementation of Publisher-Subscriber 
+Talking about desing patterns, there is **ReactiveX** library. It's basically an implementation of Publisher-Subscriber 
 architectural pattern, that comes in different languages. Java implementation is konw as RxJava.
 The syntax is very similar with Java Streams, but that is where all other similarity seas. Instead of iterating over the collection, 
 the reactive library is for having asynchronous event-based communication between observable (publisher) and observer (subscriber).
@@ -423,7 +423,7 @@ __Filter__ function
 __Transformation__ function would be
 
 ```c++
-    template <typename Func, typename R = std::invoke_result_t<MapFunc, const Person&>>
+    template <typename Func, typename R = std::invoke_result_t<Func, const Person&>>
     auto mapPersons(const persons_t& persons, Func func)
     {
         std::vector<R> result; // auxiliary memory space
