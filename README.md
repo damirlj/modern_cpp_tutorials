@@ -441,7 +441,9 @@ Eventually, we can write something like
     print(mapToNames(adults(persons));
 ```
 
+
 > **Note** For more details please visit: [__Turorial 4__](/src/Tutorial%204/TestFP.cxx)
+
 
 There is also a third-party range library, which simplified the syntax using '|' operator
 
