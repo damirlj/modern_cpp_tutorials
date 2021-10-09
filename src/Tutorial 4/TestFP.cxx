@@ -1,7 +1,7 @@
 /*
  * TestFP.cxx
  *
- *  Created on: Oct 4, 2021
+ *  Created on: Oct 9, 2021
  *      Author: <a href="mailto:damirlj@yahoo.com">Damir Ljubic</a>
  */
 
@@ -262,11 +262,13 @@ namespace test::fp
 
     /*
      * Call in your main.cpp as
+     
+     * #include TestFP.hxx
      *
-     *      int main()
-     *      {
-     *          return test::fp::testFP();
-     *      }
+     * int main()
+     * {
+     *     return test::fp::testFP();
+     * }
      */
     int testFP()
     {
