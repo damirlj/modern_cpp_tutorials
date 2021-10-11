@@ -537,4 +537,4 @@ we need helper function that converts blocking get call into non-blocking one.
 ```
 
 Since this is presentation from the second hand, for this and many other concepts of functional programming,
-I would highly recommend to read this exelent book ["Functional Programming in C++" by Ivan Cukic](https://cppcast.com/ivan-cukic)
+I would highly recommend to read this exelent book ["Functional Programming in C++" by Ivan Čukić](https://cppcast.com/ivan-cukic)
