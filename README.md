@@ -440,7 +440,7 @@ __Transformation__ function would be
 Eventually, we can write something like
 
 ```
-    print(mapToNames(adults(persons)); // from inner to other
+    print(mapToNames(adults(persons)); // from inner to outher call
 ```
 
 > **Note** For more details please visit: [__Turorial 4__](/src/Tutorial%204/TestFP.cxx)
