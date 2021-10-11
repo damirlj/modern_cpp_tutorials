@@ -294,7 +294,7 @@ Take for instance this example
     
 ```
 
-Check the source code for more details on this topic.
+Check the [source code](/src/Tutorial%203) for more details on this topic.
 
 ## Tutorial 4
 ### Functional programming
@@ -353,7 +353,7 @@ The library itself provides all the necessary infrastructure, so that we, once a
                 .flatMap((Function<List<Person>, Observable<List<String>>>) persons-> {
                     return Observable.fromIterable(persons)
                             .filter(person->person.getAge() > 18)
-                            .map(Person::getName)
+                            .map(Person::getName) // transformation function f: Person->String
                             .toList()
                             .toObservable();
                 })
@@ -386,7 +386,7 @@ The first, traditional approach - using good-old loop
     std::vector<std::string> namesOf(const persons_t& persons, FilterFunc filter)
     {
         std::vector<std::string> names;
-        names.reaerve(persons.size());
+        names.reserve(persons.size());
         
         for (const auto& person : persons)
         {
