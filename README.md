@@ -294,12 +294,12 @@ Take for instance this example
     
 ```
 
-Check the source code for more details on this topic.
+Check the [source code](/src/Tutorial%203) for more details on this topic.
 
 ## Tutorial 4
 ### Functional programming
 
-It's a common mistake that people treat C++ as a solely OOL  - it's a hybrid language that supports the OOD paradigm, 
+It's a common mistake thinking on C++ as a solely OOL  - it's a hybrid language that supports the OOD paradigm, 
 but It's also the functional language, especially having in mind that the _std_ library itself is written in a way to follow the
 principles of the functional programming: having generic _higher-order_ functions that take as argument another functions,
 or return another functions as result. 
@@ -322,11 +322,11 @@ persons.stream()
               .collect(Collectors.toList());
 ```
 
-Here, instead of being burden with implementation details ("how" the operators are implemented) - imperative programming, 
-we are more focused on "what" should be done, as with declarative programming - expressing our intentions with callable objects 
+Here, instead of being burden with implementation details (_"how"_ the operators are implemented) - imperative programming, 
+we are more focused on _"what"_ should be done, as with declarative programming - expressing our intentions with callable objects 
 on a chained operators. You can think of it as Strategy design pattern.
-Talking on desing patterns, there is **ReactiveX** library. It's basically an implementation of Publisher-Subscriber 
-architectural pattern, that comes in different languages. Java implementation is konw as RxJava.
+Talking about desing patterns, there is **ReactiveX** library. It's basically an implementation of Publisher-Subscriber 
+architectural pattern, that comes in different languages. Java implementation is konw as _RxJava_.
 The syntax is very similar with Java Streams, but that is where all other similarity seas. Instead of iterating over the collection, 
 the reactive library is for having asynchronous event-based communication between observable (publisher) and observer (subscriber).
 We can even specify different thread contexts in which the observable will emit events/items, from the one in which the observer 
@@ -353,7 +353,7 @@ The library itself provides all the necessary infrastructure, so that we, once a
                 .flatMap((Function<List<Person>, Observable<List<String>>>) persons-> {
                     return Observable.fromIterable(persons)
                             .filter(person->person.getAge() > 18)
-                            .map(Person::getName)
+                            .map(Person::getName) // transformation function f: Person->String
                             .toList()
                             .toObservable();
                 })
@@ -386,7 +386,8 @@ The first, traditional approach - using good-old loop
     std::vector<std::string> namesOf(const persons_t& persons, FilterFunc filter)
     {
         std::vector<std::string> names;
-
+        names.reserve(persons.size());
+        
         for (const auto& person : persons)
         {
             if (filter(person))
@@ -403,7 +404,8 @@ This would be an imperative - or halfway declarative approach.
 To turn it into truly **declarative** way, so that the code is more expressive and reusable,
 we need to make separation of concerns. But this flexibility doesn't come without costs.
 The main problem is that __std algorithms are not composable__. The reason for that is that 
-they use iterators instead of the concreate collections, which requires the auxiliary memory space
+they use iterators instead of the concreate collections, which requires the auxiliary memory space:
+if we want to have a _pure_ function which doesn't alter input collection
 
 __Filter__ function
 
@@ -423,7 +425,7 @@ __Filter__ function
 __Transformation__ function would be
 
 ```c++
-    template <typename Func, typename R = std::invoke_result_t<MapFunc, const Person&>>
+    template <typename Func, typename R = std::invoke_result_t<Func, const Person&>>
     auto mapPersons(const persons_t& persons, Func func)
     {
         std::vector<R> result; // auxiliary memory space
@@ -438,7 +440,7 @@ __Transformation__ function would be
 Eventually, we can write something like
 
 ```
-    print(mapToNames(adults(persons));
+    print(mapToNames(adults(persons)); // from inner to outher call
 ```
 
 
@@ -450,7 +452,7 @@ There is also a third-party range library, which simplified the syntax using '|'
  ```c++
     auto adultsNames(const persons_t& persons) 
     {
-        return persons | filter(is_adult)| transform(to_name);
+        return persons | filter(is_adult)| transform(to_name); // from left to right
     }
  ```
 
@@ -466,6 +468,7 @@ of the same class template F<T2>:
     template <typename T1, typename Func>
     auto map(F<T1> t1, Func f)->decltype(F(f(T1))) 
     {
+       ...
     }
 
     where f: T1->T2 is transformation function.
@@ -482,21 +485,21 @@ Typical example of a functor is _std::optional<T>_
     }
 ```
     
-Let assume we have this two transform functions
+Let assume we have this two transformation functions
 
 ```c++
-    std::string f1 (const std::string& s); // first transform function
-    std::string f2 (const std::string& s); // second transform function
+    std::string f1 (const std::string& s); // first transformation function
+    std::string f2 (const std::string& s); // second transformation function
 ``` 
 
 Now we can write
 
 ```c++
-    map(map(s, f1), f2); //pay attention that map(s, f1) wraps the type into std::optional
+    map(map(s, f1), f2); //pay attention that map(s, f1) wraps the result into std::optional<std::string>
 ``` 
 
-The problem arises when transform functions returns std::optional itself, to indicate the outcome of operation, 
-since map(s, f1) would return std::optional<std::optional<std::string>>.
+The problem arises when transformation functions return std::optional itself, to indicate the outcome of operation, 
+since map(s, f1) would then return std::optional<std::optional<std::string>>.
 This is where monads come in rescue, by slightly redefine the transformation helper function 
     
 ```c++
@@ -536,4 +539,4 @@ we need helper function that converts blocking get call into non-blocking one.
 ```
 
 Since this is presentation from the second hand, for this and many other concepts of functional programming,
-I would highly recommend to read this exelent book ["Functional Programming in C++" by Ivan Cukic](https://cppcast.com/ivan-cukic)
+I would highly recommend to read this exelent book ["Functional Programming in C++" by Ivan Čukić](https://cppcast.com/ivan-cukic)
