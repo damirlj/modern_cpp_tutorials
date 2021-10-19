@@ -7,7 +7,7 @@
 
 using namespace utils::file;
 
-FileStream::FileStream(const std::string& path, std::ios_base::openmode mode) noexcept
+FileStream::FileStream(const std::filesystem::path& path, std::ios_base::openmode mode) noexcept
 {
     m_file.open(path, mode);
 }

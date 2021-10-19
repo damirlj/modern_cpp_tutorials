@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include <fstream>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -34,8 +35,7 @@ namespace utils::file
                  * @param mode  Open mode, which specify the type of the file stream and the
                  * way how it should be created
                  */
-                FileStream(const std::string& path
-                        , std::ios_base::openmode mode) noexcept;
+                FileStream(const std::filesystem::path& path, std::ios_base::openmode mode) noexcept;
 
                 // Copy operation forbidden
 
@@ -63,11 +63,11 @@ namespace utils::file
         {
             public:
 
-                explicit OutputFileStream(const std::string& path) noexcept :
+                explicit OutputFileStream(const std::filesystem::path& path) noexcept :
                     FileStream(path, std::ofstream::out)
                 {}
 
-                OutputFileStream(const std::string& path, std::ios_base::openmode mode) noexcept :
+                OutputFileStream(const std::filesystem::path& path, std::ios_base::openmode mode) noexcept :
                     FileStream(path, std::ofstream::out | mode)
                 {}
 
@@ -88,10 +88,15 @@ namespace utils::file
 
             private:
 
-                    template<class T1, typename = std::enable_if_t<std::is_constructible<chunk_t, T1>::value>>
-                    void writeData(T1&& data)
+                    template <class Data>
+                    static constexpr bool compatible = std::is_same_v<std::decay_t<Data>, chunk_t> ||
+                                                       std::is_constructible_v<chunk_t, Data> ||
+                                                       std::is_convertible_v<Data, chunk_t>;
+
+                    template<class Data, typename = std::enable_if_t<compatible>>
+                    void writeData(Data&& data)
                     {
-                        auto&& rdata = std::forward<T1>(data);//universal reference
+                        auto&& rdata = std::forward<Data>(data);//universal reference
                         m_file.write(reinterpret_cast<const char*>(&rdata[0]), rdata.size());
                     }
 
@@ -104,11 +109,11 @@ namespace utils::file
         {
             public:
 
-                explicit InputFileStream(const std::string& path) noexcept:
+                explicit InputFileStream(const std::filesystem::path& path) noexcept:
                     FileStream(path, std::ifstream::in)
                 {}
 
-                InputFileStream(const std::string& path, std::ios_base::openmode mode) noexcept :
+                InputFileStream(const std::filesystem::path& path, std::ios_base::openmode mode) noexcept :
                     FileStream(path, std::ifstream::in | mode)
                 {}
 
