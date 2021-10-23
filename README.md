@@ -46,77 +46,75 @@ either converted to string (numeric values ), or expecting java-like user-define
 In pre C++17 times, that couldn’t be done elegant as with compile time <i>if constexpr</i> check
 
 ```c++
-       
-        // Tag dispatching in action 
-        
-        using string_tag_v = enum class StringTagValues : uint8_t
-       {
-               tag_string,
-               tag_numeric,
-               tag_enum,
-               tag_invalid
-       };
+   // Tag dispatching in action 
 
-       using string_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_string>;
-       using numeric_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_numeric>;
-       using enum_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_enum>;
-       using invalid_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_invalid>;
+   using string_tag_v = enum class StringTagValues : uint8_t
+   {
+           tag_string,
+           tag_numeric,
+           tag_enum,
+           tag_invalid
+   };
+
+   using string_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_string>;
+   using numeric_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_numeric>;
+   using enum_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_enum>;
+   using invalid_tag_t = std::integral_constant<string_tag_v , string_tag_v::tag_invalid>;
 
 
-       template <typename T>
-       std::string conv2string(const T& t, invalid_tag_t)
-       {
-           return {}; //type is not convertible to string
-       }
+   template <typename T>
+   std::string conv2string(const T& t, invalid_tag_t)
+   {
+       return {}; //type is not convertible to string
+   }
 
-       template <typename T>
-       std::string conv2string(const T& t, string_tag_t)
-       {
-           return t;
-       }
+   template <typename T>
+   std::string conv2string(const T& t, string_tag_t)
+   {
+       return t;
+   }
 
-       template <typename T>
-       std::string conv2string(const T& t, numeric_tag_t)
-       {
-           return std::to_string(t);
-       }
+   template <typename T>
+   std::string conv2string(const T& t, numeric_tag_t)
+   {
+       return std::to_string(t);
+   }
 
-       template <typename T>
-       std::string conv2string(const T& t, enum_tag_t)
-       {
-           const auto e = static_cast<std::underlying_type_t<T>>(t);
-           /*
-            * @note: for some compiler the sign promotion may happen
-            * enum class : uint8_t
-            * passing the scoped enum to std::to_string() may invoke singed promotion, i.e.
-            * std::to_string(int) overloading will be called instead of expected std::to_string(unsigned)
-            * In case that is building process set to fail on any compiler issues, additional 
-            * cast to double is required
-            * std::to_string(static_cast<double>(e));
-           */
-           return std::to_string(e); 
-       }
-       
-       template <typename T>
-       struct is_string_compatible
-       {
-          static constexpr bool value = std::is_same<std::decay_t<T>, std::string>::value ||
-                            std::is_constructible<std::string, T>::value ||
-                            std::is_convertible<T, std::string>::value;
-       };
+   template <typename T>
+   std::string conv2string(const T& t, enum_tag_t)
+   {
+       const auto e = static_cast<std::underlying_type_t<T>>(t);
+       /*
+        * @note: for some compiler the sign promotion may happen
+        * enum class : uint8_t
+        * passing the scoped enum to std::to_string() may invoke singed promotion, i.e.
+        * std::to_string(int) overloading will be called instead of expected std::to_string(unsigned)
+        * In case that is building process set to fail on any compiler issues, additional 
+        * cast to double is required
+        * std::to_string(static_cast<double>(e));
+       */
+       return std::to_string(e); 
+   }
 
-       template <typename T>
-       std::string conv2string(const T& t)
-       {
-           return conv2string(t,
-                   std::integral_constant<string_tag_v,
-                            is_string_compatible<T>::value ? string_tag_v::tag_string :
-                            std::is_arithmetic<std::decay_t<T>>::value ? string_tag_v::tag_numeric :
-                            std::is_enum<std::decay_t<T>>::value ? string_tag_v::tag_enum :  
-                            string_tag_v::tag_invalid
-                       >{});
-       }
+   template <typename T>
+   struct is_string_compatible
+   {
+      static constexpr bool value = std::is_same<std::decay_t<T>, std::string>::value ||
+                        std::is_constructible<std::string, T>::value ||
+                        std::is_convertible<T, std::string>::value;
+   };
 
+   template <typename T>
+   std::string conv2string(const T& t)
+   {
+       return conv2string(t,
+               std::integral_constant<string_tag_v,
+                        is_string_compatible<T>::value ? string_tag_v::tag_string :
+                        std::is_arithmetic<std::decay_t<T>>::value ? string_tag_v::tag_numeric :
+                        std::is_enum<std::decay_t<T>>::value ? string_tag_v::tag_enum :  
+                        string_tag_v::tag_invalid
+                   >{});
+   }
 ```
 
 ## Tutorial 3
@@ -191,7 +189,6 @@ To do that, we use *std::tie()* call
 
             std::tuple<Args&...> m_values; // Store arguments as lvalue references!
             static constexpr size_t N = sizeof...(Args);
-
     };
 ```
 
@@ -257,6 +254,7 @@ Consider having simple class which represents the person
                std::make_tuple(p2.getAge(), p2.getName(), p2.getGender());
     }
 ```
+
 In most cases that would be sufficient.
 On the other hand, there is no garantie of the semantical-logical correctness of the comparison.
 Take for instance this example
@@ -291,7 +289,6 @@ Take for instance this example
     
     which, by the way, also give you an unsatisfactory result (doesn't concern the
     coordinates as absolute distance from (0,0)).
-    
 ```
 
 Check the [source code](/src/Tutorial%203) for more details on this topic.
@@ -314,8 +311,8 @@ For those who are familiar with **Java Streams**, they embody these kind of prin
 operations - monads, that transform the stream until they reach the terminal operation
 
 ```java
-List<Person> persons = …
-persons.stream()
+    List<Person> persons = …
+    persons.stream()
                .filter(person->person.getAge() >= age) //lambda
                .map(Person::getName) // non-static member method reference
                //.forEach(System.out::println) // static member method reference
@@ -358,9 +355,7 @@ The library itself provides all the necessary infrastructure, so that we, once a
                             .toObservable();
                 })
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::updateNames)
-        ;
-
+                .subscribe(this::updateNames);
     }
 ```
 
@@ -369,7 +364,6 @@ But, how C++ implementation may look like?
 The first, traditional approach - using good-old loop
 
 ```c++
-
    /*
      * Imperative way
      *
@@ -535,8 +529,239 @@ we need helper function that converts blocking get call into non-blocking one.
                     return func(f.get());
                 });
     }
- 
 ```
 
 Since this is presentation from the second hand, for this and many other concepts of functional programming,
 I would highly recommend to read this exelent book ["Functional Programming in C++" by Ivan Čukić](https://cppcast.com/ivan-cukic)
+    
+## Tutorial 5
+DIP - **Dependency Inversion Principle** is one in collection of well-known SOLID principles, which in short
+advises that in order to loosely couple on dependency, we should depend on the _abstraction_ rather than on the _concreate implementation_.
+This way, we decouple the behavioral aspect of the interface, from its concrete implementation.
+In other words, the _Client_ shouldn't be aware of implementation details - nor it should directly instantiate the dependency object, the _Service_.
+This should be responsibility of another component, _Injector_ - that would [inject the dependency](https://en.wikipedia.org/wiki/Dependency_injection)
+at client side either through
+
+* Constructor of the client
+* Setter method
+* Interface method
+    
+	```c++
+        template <typename Service>
+        struct ServiceSetter
+        {
+            virtual void set(std::shared_ptr<Service> service) = 0;
+        }
+
+        template <typename Services…>
+        class Client : public ServiceSetter<Services>…
+        {
+        };
+	```
+    
+In some languages (like Java), there are even  DI Frameworks that can be used for introducing the highly configurable
+runtime dependency injection (Spring, Dagger, etc.).
+
+But, what would be **benefit** of this?  
+One obviously is for having flexible code, that can be easily configured for different kind of dependency implementations,  
+without paying the price of refactoring - changing the code, since the interfaces remaining the same.  
+Another benefit would be simplified test scenarios, where the real implementation is replaced with the _mocking_ one.  
+
+### Implementation
+    
+There is another, more generic term: IOC-_Inversion Of Control_, where DI is just one variation of it.  
+We usually talk about the IOC container - a centralized component that holds all dependency modules across the process.
+Internally, it holds two associative arrays, since the DO (Dependency Object) can be either obtained as a shared (already created) instance,
+or the client can require new instance of DO, which will be then factored - by invoking the matching factory.
+This means, that we need to store the arbitrary number of arguments required by the factory, for being able to create on demand,
+a new DO instance - on the same argument list. We could use, once again, [*tuple*](/src/Tutorial%203) as a storage for these arguments  
+
+```c++
+    template <typename DIServiceInterface, typename DIService, typename...Args>
+    class DIFactory final : IFactory<DIServiceInterface>
+    {
+	    …
+	
+        /**
+         * For binding the arguments of dependency object - service creation,
+         * with factory method
+         *
+         * <p>
+         * The service factory will be placed into IOC container.
+         * In case that expectation is that each call of the @see DIFactory#create
+         * creates the new instance of the service implementation, to accomplish that,
+         * the arguments for the factory function need to be stored into tuple
+         *
+         * @param args  Service implementation construction arguments
+         */
+         explicit DIFactory(Args&&...args) noexcept :
+            m_args(std::make_tuple(std::forward<Args>(args)...))
+        {}
+
+        private:
+            std::tuple<std::decay_t<Args>...> m_args; // store the arguments
+    };
+```
+    
+To produce a new instance of DO, we call eventually [std::apply](https://en.cppreference.com/w/cpp/utility/apply) on that tuple  
+
+```c++
+	/**
+     * Factory method: creates the dependency object, a
+     * Service that will be injected at client side.
+     *
+     * @return  Reference to the service concrete implementation upcasted (RVO)
+     *          to the matching interface
+     *
+     * @note template <class T> class A{ public: A(T* t);};
+     * There is no hierarchy "is a" relationship between A<Base> and A<Derived> instances
+     * (only between template parameters!)
+     */
+    std::unique_ptr<DIServiceInterface> create() override
+    {
+           return std::apply(
+                [](auto&&...args)
+                {
+                    return factory<DIService>(std::forward<decltype(args)>(args)...);
+                }
+               , m_args);
+    }
+```
+
+In order to be able to store in homogenous collections objects of a different type - we need some kind of
+universal type-container, that could hold virtually any type.
+
+>Hint: We don't want to use _void *_.
+    
+    
+
+Since C++17, std library offers exactly what we need - [std::any](https://en.cppreference.com/w/cpp/utility/any).  
+Taking into account constraint, that contained type needs to be copy-constructible, we will use std::shared_ptr<T> to  
+reference both, not only DO, but also the fatory object.  
+
+```c++
+    using factories_map = std::unordered_map<std::type_index, std::any>;
+    using instances_map = std::unordered_map<std::type_index, std::any>;
+
+    
+    /**
+    * Adding to container the factory method for creating the matching
+    * dependencies
+    *
+    * @tparam DIService        Service interface
+    * @tparam DIServiceImpl    Service concrete implementation
+    * @tparam Args             Arbitrary argument types
+    * @param  args             Arguments to construct the concrete service implementation
+    */
+    template <class DIService, class DIServiceImpl, typename...Args>
+    inline void DIContainer::add(Args&&...args)
+    {
+        using namespace std;
+
+        const auto id = type_index(typeid(DIService)); //C++ "reflection": service interface type index as a key
+
+        const auto it = m_diFactories.find(id);
+        if (it != m_diFactories.end()) throw std::runtime_error("DI: Service factory already specified!");
+
+        auto factory = make_factory<DIService, DIServiceImpl>(std::forward<Args>(args)...);
+        if (!factory) throw std::runtime_error("DI: Service factory not created!");
+
+        // Save instance - for the case that shared instance is required
+
+        m_diServices[id] = std::any(std::shared_ptr<DIService>(factory->create()));
+
+        // Save service factory - for the case that new instance is required
+
+        m_diFactories[id] = std::any(std::shared_ptr<IFactory<DIService>>(std::move(factory)));
+    }
+```
+
+At client side, we are only aware of the interface - not the concrete implementation.  
+To achieve that, to inject a proper implementation, we rely on the **C++ "reflection"**, mapping the index
+of the service interface type (_std::type_index_) to the associated counterpart  
+    
+```C++  
+    
+    /**
+     * Retrieving at client side the concrete service implementation, based on
+     * the given service interface type - its std::type_index
+     *
+     * @tparam DIService    Service interface
+     * @param shared        Whether to retrieve the shared reference to the service, or
+     *                      create a new instance
+     * @return              The reference to the concrete service implementation
+     */
+    template <class DIService>
+    inline std::optional<std::shared_ptr<DIService>> get(bool shared)
+    {
+         using namespace std;
+         // Service interface as key to find the associated implementation
+         const auto id = type_index(typeid(DIService)); 
+         /*
+          * If the shared instance of the service implementation is required,
+          * grab from the container the matching one
+          */
+         if (shared)
+         {
+             if (const auto it = m_diServices.find(id); it != m_diServices.end())
+             {
+                 return std::any_cast<std::shared_ptr<DIService>>(it->second);
+             }
+             else
+             {
+                 cerr << "DI: Service implementation not found!\n";
+                 return nullopt;
+             }
+         }
+
+         // Otherwise, return the new instance of the service implementation
+
+         if (const auto it = m_diFactories.find(id); it != m_diFactories.end())
+         {
+             const auto& factory = std::any_cast<const std::shared_ptr<IFactory<DIService>>&>(it->second);
+             return factory->create();
+         }
+         else
+         {
+             cerr << "DI: Service factory not found!\n";
+             return nullopt;
+         }
+    }
+```  
+
+Additionally, we can write a generic client as well, that stores the dependencies into type-safe unions [std::variant](https://en.cppreference.com/w/cpp/utility/variant),  
+and use the **visitor pattern** along with the function object which overloaded _call operator_ set covers all dependencies.  
+Usually, we want to target the single dependency, rather than visit all of them at once.  
+For that, we will call _std::holds_alternative_ explicitly, to check whether DO is held by the union  
+    
+```c++
+   /**
+     * Provide for the particular service type
+     * the callable object that will be invoked
+     * on the injected service implementation
+     *
+     * @param func  Function object that will be invoked on the injected
+     *              service implementation
+     * @return      The return value of invocation, if any: otherwise, exception will be thrown
+     */
+    template <typename Service, typename Function>
+    decltype(auto) call(Function func)
+    {
+        if (auto it = std::find_if(m_services.begin(), m_services.end()
+                , [](const auto& service)
+                {
+                    return std::holds_alternative<Service>(service);
+                }
+                ); it != m_services.end())
+        {
+            return func(std::get<Service>(*it));
+        }
+        else
+        {
+           throw std::logic_error("<DI> Non-existing service required!");
+        }
+    }
+```
+
+The complete source code with examples is available at: [Tutorial 5](/src/Tutorial%205)
+    
