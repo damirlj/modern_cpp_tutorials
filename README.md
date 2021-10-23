@@ -233,7 +233,7 @@ Consider having simple class which represents the person
                    ;
     }
     
-    /*
+   /*
     * You can choose class scope - unary, or binary version of 
     * the operator <
     * The binary version can be implemented also as the friend function, and 
@@ -255,41 +255,47 @@ Consider having simple class which represents the person
     }
 ```
 
-In most cases that would be sufficient.
-On the other hand, there is no garantie of the semantical-logical correctness of the comparison.
+On the other hand, there is no garantie of the semantical - logical correctness of the comparison.
 Take for instance this example
 
 ```c++
     struct Point { int x, y;};
+```
     
-    Writing something like
-     
+Writing something like  
+
+```c++
     bool operator < (const Point& p1, const Point& p2)
     {
          return (p1.x < p2.x) && (p1.y < p2.y);
     }
+```
     
-    is wrong, in terms of the points in Descartes coordinate system
-    Instead, the correct comparison would be
+is wrong, in terms of the points in Descartes coordinate system
+Instead, the correct comparison would be
+
+```c++
     bool operator < (const Point& p1, const Point& p2)
     {
            // Distance from (0,0)
            return (p1.x * p1.x + p1.y * p1.y) < (p2.x * p2.x + p2.y * p2.y);
     }
+```
     
-    If you want to rely on the lexicographical (alphabetical) ordering,
-    you would need manually write, something like
-    
+If you want to rely on the lexicographical (alphabetical) ordering,
+you would need manually write, something like
+
+```c++
     bool operator < (const Point& p1, const Point& p2)
     {
          if (p1.x < p2.x) return true;
          if (p1.y > p2.y) return false;
          return p1.x < p2.x;
     }
-    
-    which, by the way, also give you an unsatisfactory result (doesn't concern the
-    coordinates as absolute distance from (0,0)).
 ```
+which, by the way, also give you an unsatisfactory result (doesn't concern the
+coordinates as absolute distance from (0,0)).
+
 
 Check the [source code](/src/Tutorial%203) for more details on this topic.
 
@@ -364,7 +370,7 @@ But, how C++ implementation may look like?
 The first, traditional approach - using good-old loop
 
 ```c++
-   /*
+    /*
      * Imperative way
      *
      * This is actually kind of lifting the generic filter function to
@@ -605,8 +611,8 @@ a new DO instance - on the same argument list. We could use, once again, [*tuple
     
 To produce a new instance of DO, we call eventually [std::apply](https://en.cppreference.com/w/cpp/utility/apply) on that tuple  
 
-```c++
-	/**
+```c++  
+    /**
      * Factory method: creates the dependency object, a
      * Service that will be injected at client side.
      *
@@ -644,7 +650,7 @@ reference both, not only DO, but also the fatory object.
     using instances_map = std::unordered_map<std::type_index, std::any>;
 
     
-    /**
+   /**
     * Adding to container the factory method for creating the matching
     * dependencies
     *
@@ -680,8 +686,7 @@ At client side, we are only aware of the interface - not the concrete implementa
 To achieve that, to inject a proper implementation, we rely on the **C++ "reflection"**, mapping the index
 of the service interface type (_std::type_index_) to the associated counterpart  
     
-```C++  
-    
+```c++  
     /**
      * Retrieving at client side the concrete service implementation, based on
      * the given service interface type - its std::type_index
@@ -735,7 +740,7 @@ Usually, we want to target the single dependency, rather than visit all of them 
 For that, we will call _std::holds_alternative_ explicitly, to check whether DO is held by the union  
     
 ```c++
-   /**
+    /**
      * Provide for the particular service type
      * the callable object that will be invoked
      * on the injected service implementation
