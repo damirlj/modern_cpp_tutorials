@@ -3,10 +3,10 @@
 These are some collection of working concepts that served me as 
 teaching platform - for exploring the new features introduced by the latest C++ standards.
 Some of them were starting point in implementation of various utility 
-classes and libraries in real projects, across different platforms (like socket library, logging mechanism, benchmarking, etc.)
+classes and libraries in real projects, across different platforms (like socket library, logging mechanism, benchmarking, etc.).
 I’ve also used them to introduce the colleagues, as part of the internal discussions and knowledge transfer, the new approaches 
-in realization of the well know topics, like concurrency and new memory model, the power of callable objects and 
-functional programming, generics and algorithms – template metaprogramming, chrono library, etc.
+in realization of the well known topics, like concurrency and new memory model, the power of callable objects and 
+functional programming, generic – template (meta)programming, chrono library, etc.
 
 Please have in mind that using the code in commercial purposes is not allowed.  
 Exposing them to the community is the way for getting the valuable feedback.  
@@ -17,14 +17,14 @@ Thanks in advance.
 
 ## Tutorial 1
 
-<b>AOT – Active Object Thread</b> design pattern is introduced, as way to have asynchronous interthread communication, 
+<b>AOT – Active Object Thread</b> design pattern is introduced, as way to have asynchronous inter-thread communication, 
 delegating the tasks to the background thread, enqueuing them into the tasks queue.
 The thread drains the queue and provides the execution context, a separate one from the thread(s) from which 
 the tasks are sent, in which they will be executed sequentially, in order of arrival (FIFO).
 The caller thread can be also synchronized on result of task being executed, waiting on signaling the execution completion 
 through the communication channel (future).
 
-This concept is heavily used for asynchronous massage-based interthread communication, especially for time consuming – blocking tasks that are delegated to the background thread in asynchronous way, where order of execution is preserved (first came, first served).    
+This concept is heavily used for asynchronous massage-based inter thread communication, especially for time consuming – blocking tasks that are delegated to the background thread in asynchronous way, where order of execution is preserved (first came, first served).    
 Typically, you would use this approach for
 
 * <i>Producer-consumer</i> scenarios (audio, video streaming, etc.)
@@ -36,17 +36,17 @@ Typically, you would use this approach for
 <b>Type traits</b> are small objects for inspecting the type (rather than value) at compile time.
 I’ve first encountered the type traits like constructs in [“Modern C++ Design”](https://en.wikipedia.org/wiki/Modern_C%2B%2B_Design) introduced by A. Aleksandrescu and his Loki library.
 They are heavily used in template metaprogramming in various scenarios:
--	For SFINAE: imposing the template parameter substitution constraints: which types can be potentially consider as a valid for template parameter substitution (instantiation) both, as argument or return values.
+-	For **SFINAE**: imposing the template parameter substitution constraints: which types can be potentially consider as a valid for template parameter substitution (instantiation) both, as argument or return values.
 -	For checking compile time condition that are type related (if constexpr)
 -	For creating function overloading set (tag dispatching)
 -	For any compile time type based decisions
 
 This is small demonstration of using type traits with generic programming, where the type needs to be logged to logging medium
-either converted to string (numeric values ), or expecting java-like user-defined types with public non-static member method “toString()”
-In pre C++17 times, that couldn’t be done elegant as with compile time <i>if constexpr</i> check
+either converted to a string (for numeric values), or expecting java-like user-defined types with public non-static member method “toString()”.  
+In pre C++17 times, this requirement couldn’t be done as elegant as with compile time <i>if constexpr</i> check
 
 ```c++
-   // Tag dispatching in action 
+   // Tag dispatching in action for C++14 compiler
 
    using string_tag_v = enum class StringTagValues : uint8_t
    {
@@ -121,9 +121,9 @@ In pre C++17 times, that couldn’t be done elegant as with compile time <i>if c
 
 ### Tuples
 
-Although I myself don't use tuples so frequently in everyday practice, it is sometime 
-quite useful to employ this data structure, so I’ve decided to introduce some use-cases, at least 
-to some of You who never encountered std::tuple in this particular scenarios.
+To be honest, I don't use tuples so frequently in everyday practice, although it's sometime inevitable, even 
+recommended.  
+Therefore, I’ve decided to introduce some use-cases, where tuples can be quite useful.  
 
 **First scenario** would be if there is some repetitive assignment work, which is non-trivial, because you have 
 some nullable, std::optional-like custom data type that may look like
@@ -136,8 +136,8 @@ some nullable, std::optional-like custom data type that may look like
         …
     };
 ```
-Appealing characteristic of std::tuple, is that it's fixed-size heterogenous data structure – it can hold different data types.
-We can write a generic class, with variadic number of parameters, stored into tuple as lvalue references.
+Appealing characteristic of _std::tuple_, is that it's fixed-size heterogenous data structure – it can hold different data types.
+We can write a generic class, with variadic number of parameters, stored into tuple as lvalue references.  
 To do that, we use *std::tie()* call
 
 ```c++
@@ -208,7 +208,7 @@ Consider having simple class which represents the person
     {
         public:
 
-            Person(int _age, std::string _name, gender_t _gender):
+            Person(int _age, std::string _name, gender_t _gender) noexcept :
                 age(_age)
                 , name(std::move(_name))
                 , gender(_gender)
@@ -255,7 +255,7 @@ Consider having simple class which represents the person
     }
 ```
 
-On the other hand, there is no garantie of the semantical - logical correctness of the comparison.
+On the other hand, there is no garantie of the semantical - logical correctness of the comparison.  
 Take for instance this example
 
 ```c++
@@ -293,8 +293,7 @@ you would need manually write, something like
          return p1.x < p2.x;
     }
 ```
-which, by the way, also give you an unsatisfactory result (doesn't concern the
-coordinates as absolute distance from (0,0)).
+which give you semantically an unsatisfactory result (doesn't concern the coordinates as absolute distance from (0,0)).
 
 
 Check the [source code](/src/Tutorial%203) for more details on this topic.
