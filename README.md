@@ -271,7 +271,7 @@ Writing something like
     }
 ```
     
-is wrong, in terms of the points in Descartes coordinate system
+is wrong, in terms of the points in Descartes coordinate system.  
 Instead, the correct comparison would be
 
 ```c++
@@ -293,7 +293,7 @@ you would need manually write, something like
          return p1.x < p2.x;
     }
 ```
-which give you semantically an unsatisfactory result (doesn't concern the coordinates as absolute distance from (0,0)).
+which give you, once again, semantically an unsatisfactory result (doesn't concern the coordinates as absolute distance from (0,0)).
 
 
 Check the [source code](/src/Tutorial%203) for more details on this topic.
@@ -734,7 +734,7 @@ of the service interface type (_std::type_index_) to the associated counterpart
 ```  
 
 Additionally, we can write a generic client as well, that stores the dependencies into type-safe unions [std::variant](https://en.cppreference.com/w/cpp/utility/variant),  
-and use the **visitor pattern** along with the function object which overloaded _call operator_ set covers all dependencies.  
+and use the **visitor pattern** along with the function object whose overloaded _call operator_ set covers all dependencies.  
 Usually, we want to target the single dependency, rather than visit all of them at once.  
 For that, we will call _std::holds_alternative_ explicitly, to check whether DO is held by the union  
     
