@@ -747,7 +747,7 @@ For that, we will call _std::holds_alternative_ explicitly, to check whether DO 
      *
      * @param func  Function object that will be invoked on the injected
      *              service implementation
-     * @return      The return value of invocation, if any: otherwise, exception will be thrown
+     * @return      The return value of invocation, for existing service: otherwise, exception will be thrown
      */
     template <typename Service, typename Function>
     decltype(auto) call(Function func)
