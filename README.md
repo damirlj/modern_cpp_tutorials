@@ -136,7 +136,7 @@ some nullable, std::optional-like custom data type that may look like
         …
     };
 ```
-Appealing characteristic of _std::tuple_, is that it's fixed-size heterogenous data structure – it can hold different data types.
+Appealing characteristic of _std::tuple_, is that it's fixed-size heterogenous data structure – it can hold different data types.  
 We can write a generic class, with variadic number of parameters, stored into tuple as lvalue references.  
 To do that, we use *std::tie()* call
 
@@ -556,7 +556,7 @@ at client side either through
         struct ServiceSetter
         {
             virtual void set(std::shared_ptr<Service> service) = 0;
-        }
+        };
 
         template <typename Services…>
         class Client : public ServiceSetter<Services>…
