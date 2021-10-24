@@ -569,7 +569,7 @@ In some languages (like Java), there are even  DI Frameworks that can be used fo
 runtime dependency injection (Spring, Dagger, etc.).
 
 But, what would be **benefit** of this?  
-One obviously is for having flexible code, that can be easily configured for different kind of dependency implementations,  
+One obviously is for having flexible code, that can be easily configured for different kind of dependency implementations, 
 without paying the price of refactoring - changing the code, since the interfaces remaining the same.  
 Another benefit would be simplified test scenarios, where the real implementation is replaced with the _mocking_ one.  
 
