@@ -734,7 +734,7 @@ of the service interface type (_std::type_index_) to the associated counterpart
 ```  
 
 Additionally, we can write a generic client as well, that stores the dependencies into type-safe unions [std::variant](https://en.cppreference.com/w/cpp/utility/variant),  
-and use the **visitor pattern** along with the function object whose overloaded _call operator_ set covers all dependencies.  
+and use the **visitor pattern** along with the function object whose overloading resolution set covers all dependencies.  
 Usually, we want to target the single dependency, rather than visit all of them at once.  
 For that, we will call _std::holds_alternative_ explicitly, to check whether DO is held by the union  
     
