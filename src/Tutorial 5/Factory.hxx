@@ -22,7 +22,7 @@ namespace utils::di
     template <class Object, class...Args>
     std::unique_ptr<Object> factory(Args&&...args)
     {
-        if constexpr ((std::is_constructible_v<Object, Args&&> && ...)) // fold expression
+        if constexpr ((std::is_constructible_v<Object, Args&&> && ...)) // unary right fold expression
         {
             return std::make_unique<Object>(std::forward<Args>(args)...);
         }
