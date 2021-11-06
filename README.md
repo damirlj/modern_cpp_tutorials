@@ -1,4 +1,12 @@
-# Introduction
+# Table of contents
+1. [Introduction](#intro)
+2. [Tutorial 1 - AOT](#tut1)
+3. [Tutrial 2 - Type traits](#tut2)
+4. [Tutorial 3 - Tuples](#tut3)
+5. [Tutorial 4 - Functional programming](#tut4)
+6. [Tutorial 5 - Dependency Injection](#tut5)
+
+## Introduction <a name="intro"/>
 
 These are some collection of working concepts that served me as 
 teaching platform - for exploring the new features introduced by the latest C++ standards.
@@ -15,7 +23,7 @@ Thanks in advance.
 >[Contact](damirlj@yahoo.com)
 
 
-## Tutorial 1
+## Tutorial 1 <a name="tut1"/>
 
 <b>AOT – Active Object Thread</b> design pattern is introduced, as way to have asynchronous inter-thread communication, 
 delegating the tasks to the background thread, enqueuing them into the tasks queue.
@@ -32,7 +40,7 @@ Typically, you would use this approach for
     * example: [Arataga](https://github.com/Stiffstream/arataga)
 
 
-## Tutorial 2
+## Tutorial 2 <a name="tut2"/>
 <b>Type traits</b> are small objects for inspecting the type (rather than value) at compile time.
 I’ve first encountered the type traits like constructs in [“Modern C++ Design”](https://en.wikipedia.org/wiki/Modern_C%2B%2B_Design) introduced by A. Aleksandrescu and his Loki library.
 They are heavily used in template metaprogramming in various scenarios:
@@ -117,7 +125,7 @@ In pre C++17 times, this requirement couldn’t be done as elegant as with compi
    }
 ```
 
-## Tutorial 3
+## Tutorial 3 <a name="tut3"/>
 
 ### Tuples
 
@@ -298,7 +306,7 @@ which give you, once again, semantically an unsatisfactory result (doesn't conce
 
 Check the [source code](/src/Tutorial%203) for more details on this topic.
 
-## Tutorial 4
+## Tutorial 4 <a name="tut4"/>
 ### Functional programming
 
 It's a common mistake thinking on C++ as a solely OOL  - it's a hybrid language that supports the OOD paradigm, 
@@ -539,7 +547,7 @@ we need helper function that converts blocking get call into non-blocking one.
 Since this is presentation from the second hand, for this and many other concepts of functional programming,
 I would highly recommend to read this exelent book ["Functional Programming in C++" by Ivan Čukić](https://cppcast.com/ivan-cukic)
     
-## Tutorial 5
+## Tutorial 5 <a name="tut5"/>
 DIP - **Dependency Inversion Principle** is one in collection of well-known SOLID principles, which in short
 advises that in order to loosely couple on dependency, we should depend on the _abstraction_ rather than on the _concreate implementation_.
 This way, we decouple the behavioral aspect of the interface, from its concrete implementation.
