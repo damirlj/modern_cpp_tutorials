@@ -1,7 +1,7 @@
 # Table of contents
 1. [Introduction](#intro)
 2. [Tutorial 1 - AOT](#tut1)
-3. [Tutrial 2 - Type traits](#tut2)
+3. [Tutorial 2 - Type traits](#tut2)
 4. [Tutorial 3 - Tuples](#tut3)
 5. [Tutorial 4 - Functional programming](#tut4)
 6. [Tutorial 5 - Dependency Injection](#tut5)
