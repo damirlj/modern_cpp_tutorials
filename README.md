@@ -5,6 +5,7 @@
 4. [Tutorial 3 - Tuples](#tut3)
 5. [Tutorial 4 - Functional programming](#tut4)
 6. [Tutorial 5 - Dependency Injection](#tut5)
+7. [Tutorial 6 - Static polymorphism (or three little pigs)](#tut6) [New]
 
 ## Introduction <a name="intro"/>
 
@@ -776,4 +777,243 @@ For that, we will call _std::holds_alternative_ explicitly, to check whether DO 
 ```
 
 The complete source code with examples is available at: [Tutorial 5](/src/Tutorial%205)
-    
+	
+## Tutorial 6 - Static polymorphism (or three little pigs) <a name="tut6"/>
+
+Static polymorphism is a collection of the template-based technics to have configurable code, where all dependencies are resolved  
+at the compile-time, through the template instantiation.  
+One can understand this as a static [dependency injection](#tut5)  
+
+![Three little pigs](Images/three_little_pigs.png)  
+	
+I've addressed this topic metaphorically _"Three little pigs"_. As in the story, they are as any siblings resembled,  
+but yet essentially different. And it takes some time (practice), to recognize these differences.  
+I'll not reveal which is my favorite one, but I'll do introduce them - so that you can choose on your own preferences.  
+
+
+### Mixin (Pig#1)
+
+Mixin class (or just mixin) is in essence the parameterized inheritance, it's the way to add additional value - functionality  
+to the templetized base class, similar to  the _Decorator_ design pattern.  
+Difference is that there is no _"is a"_ relationship between the mixin - host class, and the base class - they  
+don't share the same interface, but rather they encapsulate different - orthogonal features.  
+It's also known as collaborator-based (or role-based) design, where each mixin class has a distinguished role - 
+that can be easily combined with other roles - into resulting type which embeds all of these roles.
+
+There are two issues that should be considered, when we use mixin technic in our design:  
+	
+#### Scalability  
+	
+Problem: With linear mixing: `Mixin_1<...<Mixin_n<A>...>`, the resulting type can become quite complex  
+and eventually unmanageable.  
+For overcoming this issue, so called  `Mixin Layer` is introduced [^1].  
+Each layer represents a single collaboration, capturing the related roles in form of inner mixins  
+
+```c++
+
+	template <typename AnotherLayer>
+	class ThisLayer : public AnotherLayer
+	{
+		public:
+			// Inner mixin classes
+			class Mixin1 : public AnotherLayer::Mixin1{...};
+			class Mixin2 : public AnotherLayer::Mixin2{...};
+	};
+```
+
+This way we relax the resulting syntax and have more scalable way of exercising this technic  
+
+#### Passing the data - constructing the mixins  
+
+Constructing the result type by passing innermost non-mixin class _constructor overload set_  
+to all mixin subclasses, including the outermost one:  
+`using Super::Super`  
+This works for the case where the mixin classes only contribute with additional functionality (are _stateless_), and therefore being  
+default constructible  
+	
+```c++
+	template <typename Super>
+	class ConsoleLogger : public Super
+	{
+		public:
+			/* 
+			 *  Inherits super class c-tor overload resolution set!
+			 *  It can be constructed in the same way, as base class.
+			 */
+			using Super::Super; 
+
+	    …
+	};
+```	
+
+If this is not the case, if there is a mixin class in chain that is _stateful_: non-default constructable,  
+we need to employ _variadic templates_  
+	
+```c++  
+	template <typename Super>
+	class TimeStamp : public Super
+	{
+	       /**
+		 * Mixin class which is not default-constructible
+		 *
+		 * @param format    The desirable timestamp format
+		 * @param args      Arbitrary argument list for constructing the base class
+		 */
+		template <typename...Args>
+		explicit TimeStamp(const std::string& format, Args&&...args) noexcept :
+						     Super(std::forward<Args>(args)...)
+						     , m_format(format)
+		{}
+		…
+	};
+```  
+
+At the time when the article [^1] was published, both of these features were not part of the std library.  
+	
+The source code which demonstrates using of this technic: [**mixin**](/src/Tutorial%206/mixin)  
+	
+		
+### Policy-based design (Pig#2)
+
+Apparently, the term is first used in [^2] - the book which had the major impact on the future development of the entire language.  
+It's another aspect of the parameterized inheritance, where this time the functionality of the template class (policy) is plugged-in into the  
+interface of the derived - host class, through inheritance (pubic or private).  
+It can be seen as _strategy design pattern at compile-time_, where at client side a different policy implementations can be introduced,  
+which makes the code highly configurable - especially for the library  writers.  
+When we talk about policies, we talk about the different (*postponed*) design decisions that customize the generic code at client side  
+to fulfill certain requirements, as for  
+* locking (whether it will be used in single-thread, or multi-thread environment)
+* allocation (on the heap, or stack)
+* logging (on console, file system, or data base)  
+	
+etc.  
+
+A basic pattern for using the policy-based designed  
+
+```c++
+	template <typename LoggingPolicy>
+	class Host : private LoggingPolicy
+	{
+	    public:
+	        template <typename…Args>
+	        void f(Args&&…args)
+	        {
+	            LoggingPolicy::log(std::forward<Args>(args)…);
+	            doSomething(std::forward<Args>(args)…);
+	            ...
+	        }
+	};
+```
+The comprehensive example of using the *locking (threading) policy*, can be found at [**locking policy**](/src/Tutorial%206/locking).  
+The inspiration was the famous Loki library [^3].  
+
+
+### CRTP - Curiously Recurring Template Pattern (Pig#3)
+
+For a change, let start with a reference code snippet that will lead us to the definition  
+
+```c++
+	template <typename Implementation>
+	class Base : public Implementation
+	{
+	    // C-tor is private
+	    Base() {}
+	    friend Implementation;
+
+	    public:
+
+		// Factory method
+		template <typename...Args>
+		static std::unique_ptr<Base> create(Args&&...rgs)
+		{
+		    if constexpr ((std::is_constructable<Implementation, Args&&> &&...&& args)) //binary left fold expression
+		    {
+			 return new (std::nothrow) Implementation(std::forward<Args>(args)...);
+		    }
+		    else
+		    {
+			 return nullptr;
+		    }
+		}
+
+
+		 template <typename...Args>
+		 decltype(auto) f(Args&&...args)
+		 {
+		      return impl().f_impl(std::forward<Args>(args)...); // for prevent shadowing the names
+		 }
+		...
+	    private:
+		 Implementation& impl()
+		 {
+		     return *static_cast<Implementation*>(this);
+		 }
+	};
+```  
+	
+The reason to make the constructor of the base class private, is to prevent mismatch in specifying the template parameter [^4]:  
+
+```c++
+  
+	class A :public Base<A>{};// OK
+	class B :public Base<A>{};// compiles, but is mismatch!
+```
+
+We need to provide the derived-specific implementation of the base interface  
+
+
+```c++
+	class A : public Base<A>
+	{
+	    public:
+		explicit A(int i) noexcept;
+		void f_impl(std::string_view s){...};// Derived class implementation - A::f_impl()
+		...
+	};
+```
+
+At the client side, we can write this pseudo code, to demonstrate the technic  
+
+```c++
+	
+	class Client
+	{
+	    public:
+	        explicit Client(int i) noexcept : m_ptrA(Base<A>::create(i))
+		{}
+	        bool foo(std::string_view s, int i)
+	        {
+	            if (!m_ptrA) return false;
+	            m_ptrA->f(s);// Base class interface - Base<A>::f()
+	            ...
+	            return true;
+	        }
+	
+	    private:
+	       std::unique_ptr<A> m_ptrA;
+	};
+```
+	
+As you could see, the CRTP is the way to have derived-specific implementation that 
+will be invoked through the base class interface, whereby the derived class has no _"is a"_ relationship with base class, nor  
+inherits the interface of the base class - it just provides the implementation behind the base class interface.  
+In practice, that usually means having platform-specific implementation of the base interface (f.e. Audio Driver), which is  
+exactly the main idea of the static polymorphism - having the variations of the base interface implementations, resolvable at compile-time.  
+
+To make conclusion: when you master these valuable technics, with help of your imagination and creativity, you can  
+easily turn the "three little pigs" into "three musketeers"  
+
+![Alt Three musketeers](Images/three_little_musketeers.png)  
+	<div align="center">_Upgraded version of my initial sketch - Alex, my 6 years old son_</div>  
+	
+
+The complete source code with examples is available at: [**Tutorial 6**](/src/Tutorial%206)
+	
+
+### References
+
+[^1]: [_Mixin-Based Programming in C++_, Yannis Smaragdakis, Don Batory](https://yanniss.github.io/practical-fmtd.pdf)
+[^2]: [_Modern C++ desing_, Andrei Alexandrescu](https://en.wikipedia.org/wiki/Modern_C%2B%2B_Design)  
+[^3]: [_Loki library_](https://github.com/snaewe/loki-lib/blob/master/include/loki/Threads.h)
+[^4]: [_Fluent C++_](https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/#:~:text=The%20Curiously%20Recurring%20Template%20Pattern%20%28CRTP%29%20is%20a,is%2C%20and%20it%20is%20indeed%20an%20intriguing%20construct.)
+  
