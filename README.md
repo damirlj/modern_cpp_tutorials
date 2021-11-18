@@ -918,7 +918,7 @@ You can even combine this with **Template method** pattern
 	            doSomething(s);
 	       }
 	    protected:
-	       virtual void doSomething(const std::string& s) = 0; // template method - customization point
+	       virtual void doSomething(const std::string& s) = 0; // "template" method - customization point
 	};
 	
 	template <typename LoggingPolicy>
