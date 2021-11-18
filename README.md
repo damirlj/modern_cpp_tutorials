@@ -945,7 +945,7 @@ class Base : public Implementation
         template <typename...Args>
         static std::unique_ptr<Base> create(Args&&...rgs)
         {
-            if constexpr ((std::is_constructible_v<Implementation, Args&&> &&...&& args)) //binary left fold expression
+            if constexpr ((std::is_constructible_v<Implementation, Args&&> &&...)) // unary right fold expression
             {
                 return new (std::nothrow) Implementation(std::forward<Args>(args)...);
             }
