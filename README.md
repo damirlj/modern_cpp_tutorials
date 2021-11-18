@@ -956,17 +956,17 @@ class Base : public Implementation
         }
 
 
-         template <typename...Args>
-         decltype(auto) f(Args&&...args)
-         {
-             return impl().f_impl(std::forward<Args>(args)...); // for prevent shadowing the names
-         }
+        template <typename...Args>
+        decltype(auto) f(Args&&...args)
+        {
+            return impl().f_impl(std::forward<Args>(args)...); // for prevent shadowing the names
+        }
         ...
     private:
-         Implementation& impl()
-         {
-             return *static_cast<Implementation*>(this);
-         }
+        Implementation& impl()
+        {
+            return *static_cast<Implementation*>(this);
+        }
 };
 ```  
 	
