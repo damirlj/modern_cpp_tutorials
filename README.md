@@ -5,7 +5,7 @@
 4. [Tutorial 3 - Tuples](#tut3)
 5. [Tutorial 4 - Functional programming](#tut4)
 6. [Tutorial 5 - Dependency Injection](#tut5)
-7. [Tutorial 6 - Static polymorphism (or three little pigs)](#tut6) [New]
+7. [Tutorial 6 - Static polymorphism (or three little pigs)](#tut6)
 
 ## Introduction <a name="intro"/>
 
@@ -784,11 +784,12 @@ Static polymorphism is a collection of the template-based technics to have confi
 at the compile-time, through the template instantiation.  
 One can understand this as a static [dependency injection](#tut5)  
 
-![Three little pigs](Images/three_little_pigs.png)  
+![Three little pigs](Images/three_little_pigs.png) 
+	<div align="center">**Img.1** _Three little pigs_</div>
 	
-I've addressed this topic metaphorically _"Three little pigs"_. As in the story, they are as any siblings resembled,  
+>I've addressed this topic metaphorically _"Three little pigs"_. As in the story, they are as any siblings resembled,  
 but yet essentially different. And it takes some time (practice), to recognize these differences.  
-I'll not reveal which is my favorite one, but I'll do introduce them - so that you can choose on your own preferences.  
+I'll not reveal who is my favorite one, but I'll do introduce them - so that you can choose on your own preferences.  
 
 
 ### Mixin (Pig#1)
@@ -904,6 +905,30 @@ A basic pattern for using the policy-based designed
 	        }
 	};
 ```
+You can even combine this with **Template method** pattern  
+	
+```c++
+	template <typename LoggingPolicy>
+	class Base : private LoggingPolicy
+	{
+	    public:
+	       void f(const std::string& s)
+	       {
+	            LoggingPolicy::log(s);
+	            doSomething(s);
+	       }
+	    protected:
+	       virtual void doSomething(const std::string& s) = 0; // template method - customization point
+	};
+	
+	template <typename LoggingPolicy>
+	class Derived : public Base<LoggingPolicy>
+	{
+	    private:
+	       void doSomething(const std::string& s) override {...}
+	};
+```
+	
 The comprehensive example of using the *locking (threading) policy*, can be found at [**locking policy**](/src/Tutorial%206/locking).  
 The inspiration was the famous Loki library [^3].  
 
@@ -1000,11 +1025,11 @@ inherits the interface of the base class - it just provides the implementation b
 In practice, that usually means having platform-specific implementation of the base interface (f.e. Audio Driver), which is  
 exactly the main idea of the static polymorphism - having the variations of the base interface implementations, resolvable at compile-time.  
 
-To make conclusion: when you master these valuable technics, with help of your imagination and creativity, you can  
+>Final thoughts: when you master these valuable technics, with help of your imagination and creativity, you can  
 easily turn the "three little pigs" into "three musketeers"  
 
-![Alt Three musketeers](Images/three_little_musketeers.png)  
-	<div align="center">_Upgraded version of my initial sketch - Alex, my 6 years old son_</div>  
+![Three musketeers](Images/three_little_musketeers.png)  
+	<div align="center">**Img.2** _Upgraded version of my initial sketch - Alex, my 6 years old son_</div>  
 	
 
 The complete source code with examples is available at: [**Tutorial 6**](/src/Tutorial%206)
