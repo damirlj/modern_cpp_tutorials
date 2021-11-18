@@ -945,13 +945,13 @@ class Base : public Implementation
         template <typename...Args>
         static std::unique_ptr<Base> create(Args&&...rgs)
         {
-            if constexpr ((std::is_constructable<Implementation, Args&&> &&...&& args)) //binary left fold expression
+            if constexpr ((std::is_constructable_v<Implementation, Args&&> &&...&& args)) //binary left fold expression
             {
-             return new (std::nothrow) Implementation(std::forward<Args>(args)...);
+                return new (std::nothrow) Implementation(std::forward<Args>(args)...);
             }
             else
             {
-             return nullptr;
+                return nullptr;
             }
         }
 
@@ -959,14 +959,14 @@ class Base : public Implementation
          template <typename...Args>
          decltype(auto) f(Args&&...args)
          {
-              return impl().f_impl(std::forward<Args>(args)...); // for prevent shadowing the names
+             return impl().f_impl(std::forward<Args>(args)...); // for prevent shadowing the names
          }
         ...
     private:
-        Implementation& impl()
-        {
-            return *static_cast<Implementation*>(this);
-        }
+         Implementation& impl()
+         {
+             return *static_cast<Implementation*>(this);
+         }
 };
 ```  
 	
