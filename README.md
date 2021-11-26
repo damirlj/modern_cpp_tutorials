@@ -947,7 +947,7 @@ class Base : public Implementation
         {
             if constexpr ((std::is_constructible_v<Implementation, Args&&> &&...)) // unary right fold expression
             {
-                return new (std::nothrow) Implementation(std::forward<Args>(args)...);
+                return std::make_unique<Implementation>(std::forward<Args>(args)...);
             }
             else
             {
