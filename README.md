@@ -943,11 +943,11 @@ class Base : public Implementation
 
         // Factory method
         template <typename...Args>
-        static std::unique_ptr<Base> create(Args&&...rgs)
+        static std::unique_ptr<Base> create(Args&&...args) noexcept
         {
             if constexpr ((std::is_constructible_v<Implementation, Args&&> &&...)) // unary right fold expression
             {
-                return std::make_unique<Implementation>(std::forward<Args>(args)...);
+                return new (std::nothrow) Implementation(std::forward<Args>(args)...);
             }
             else
             {
