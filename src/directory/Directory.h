@@ -53,7 +53,7 @@ namespace utils::files
 
     };
 
-    void printDirectoryEntries(const Directory& directory);
+    void printDirectoryEntries(Directory& directory);
 }
 
 #endif /* DS_FILES_DIRECTORY_H_ */
