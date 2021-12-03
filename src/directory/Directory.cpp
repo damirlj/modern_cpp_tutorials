@@ -18,7 +18,7 @@ using namespace std;
 using namespace std::filesystem;
 
 
-Directory::Directory(path_t root) : m_root(root),
+Directory::Directory(path_t root) noexcept : m_root(root),
         m_pSyncThread(make_unique<utils::aot::AOThread>())
 {
     m_pSyncThread->start();
