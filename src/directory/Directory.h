@@ -25,7 +25,7 @@ namespace utils::files
             using entries_t = std::list<entry_t>;
             using path_t = std::filesystem::path;
 
-            explicit Directory(path_t root);
+            explicit Directory(path_t root) noexcept;
             ~Directory();
 
             std::future<void> forceSync();
@@ -53,7 +53,7 @@ namespace utils::files
 
     };
 
-    void printDirectoryEntries(Directory& directory);
+    void printDirectoryEntries(const Directory& directory);
 }
 
 #endif /* DS_FILES_DIRECTORY_H_ */
