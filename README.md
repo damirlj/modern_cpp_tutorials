@@ -999,12 +999,12 @@ class Client
     public:
         explicit Client(int i) noexcept : m_ptrA(Base<A>::create(i))
         {}
-        bool foo(std::string_view s, int i)
+        void foo(std::string_view s, int i)
         {
-            if (!m_ptrA) return false;
+            if (!m_ptrA) throw std::runtime_error("Invalid pointer.");
             m_ptrA->f(s);// Base class interface - Base<A>::f()
             ...
-            return true;
+            
         }
 
     private:
