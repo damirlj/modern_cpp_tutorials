@@ -1359,7 +1359,7 @@ and reduce the number of small allocations as result of injecting dependent obje
 * It requires a lot of boilerplate code, by specifying the behavioral affordances through interface, that will be internally  
 implemented by simple wrapping it around the parameterized type implementation, and non-virtual interface of the enclosing class  
 for forwarding the calls to the private implementation (pimpl idiom). 
-* It's still run-time polymorphism, and therefore not such efficient as [static polymorphism](#tut6)
+* It still employs virtual dispatch, and therefore is not such efficient as [static polymorphism](#tut6)
 
 ### References
 
