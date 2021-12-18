@@ -6,6 +6,7 @@
 5. [Tutorial 4 - Functional programming](#tut4)
 6. [Tutorial 5 - Dependency Injection](#tut5)
 7. [Tutorial 6 - Static polymorphism (or three little pigs)](#tut6)
+8. [Tutorial 7 - Type erasure](#tut7)
 
 ## Introduction <a name="intro"/>
 
@@ -803,7 +804,7 @@ There are two issues that should be considered, when we use mixin technic in our
 	
 Problem: With linear mixing: `Mixin_1<...<Mixin_n<A>...>`, the resulting type can become quite complex  
 and eventually unmanageable.  
-For overcoming this issue, so called  `Mixin Layer` is introduced [^1].  
+For overcoming this issue, so called  [`Mixin Layer`][1][<sup>1</sup>] is introduced.  
 Each layer represents a single collaboration, capturing the related roles in form of inner mixins  
 
 ```c++
@@ -863,14 +864,14 @@ class TimeStamp : public Super
 };
 ```  
 
-At the time when the article [^1] was published, both of these features were not part of the std library.  
+At the time when the [article][1][<sup>1</sup>] was published, both of these features were not part of the std library.  
 	
 The source code which demonstrates using of this technic: [**mixin**](/src/Tutorial%206/mixin)  
 	
 		
 ### Policy-based design (Pig#2)
 
-Apparently, the term is first used in [^2] - the book which had the major impact on the future development of the entire language.  
+Apparently, the term is first used in the [book][2][<sup>2</sup>] which had the major impact on the future development of the entire language.  
 It's another aspect of the parameterized inheritance, where this time the functionality of the template class (policy) is plugged-in into the  
 interface of the derived - host class, through inheritance (pubic or private).  
 It can be seen as _strategy design pattern at compile-time_, where at client side a different policy implementations can be introduced,  
@@ -924,7 +925,7 @@ class Derived : public Base<LoggingPolicy>
 ```
 	
 The comprehensive example of using the *locking (threading) policy*, can be found at [**locking policy**](/src/Tutorial%206/locking).  
-The inspiration was the famous Loki library [^3].  
+The inspiration was the famous [Loki library][3][<sup>3</sup>].  
 
 
 ### CRTP - Curiously Recurring Template Pattern (Pig#3)
@@ -945,7 +946,7 @@ class Base : public Implementation
         template <typename...Args>
         static std::unique_ptr<Base> create(Args&&...args) noexcept
         {
-            if constexpr ((std::is_constructible_v<Implementation, Args&&> &&...)) // unary right fold expression
+            if constexpr ((std::is_constructible_v<Implementation, Args&&> && ...)) // unary right fold expression
             {
                 return std::make_unique<Implementation>(std::forward<Args>(args)...);
             }
@@ -970,7 +971,7 @@ class Base : public Implementation
 };
 ```  
 	
-The reason to make the constructor of the base class private, is to prevent mismatch in specifying the template parameter [^4]:  
+The reason to make the constructor of the base class private, is to prevent [mismatch][4][<sup>4</sup>] in specifying the template parameter:  
 
 ```c++
 class A :public Base<A>{};// OK
@@ -1025,13 +1026,348 @@ easily turn the "three little pigs" into "three musketeers"
 	<div align="center">**Img.2** _Upgraded version of my initial sketch - Alex, my 6 years old son_</div>  
 	
 
-The complete source code with examples is available at: [**Tutorial 6**](/src/Tutorial%206)
+The complete source code with examples is available at: [**Tutorial 6**](/src/Tutorial%206)  
+
+
+### References  
+[[1]]: [_Mixin-Based Programming in C++_, Yannis Smaragdakis, Don Batory](https://yanniss.github.io/practical-fmtd.pdf)  
+[[2]]: [_Modern C++ desing_, Andrei Alexandrescu](https://en.wikipedia.org/wiki/Modern_C%2B%2B_Design)  
+[[3]]: [_Loki library_](https://github.com/snaewe/loki-lib/blob/master/include/loki/Threads.h)  
+[[4]]: [_Fluent C++_](https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/#:~:text=The%20Curiously%20Recurring%20Template%20Pattern%20%28CRTP%29%20is%20a,is%2C%20and%20it%20is%20indeed%20an%20intriguing%20construct.)  
+
 	
+[1]: <https://yanniss.github.io/practical-fmtd.pdf> 
+[2]: <https://en.wikipedia.org/wiki/Modern_C%2B%2B_Design> 
+[3]: <https://github.com/snaewe/loki-lib/blob/master/include/loki/Threads.h> 
+[4]: <https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/#:~:text=The%20Curiously%20Recurring%20Template%20Pattern%20%28CRTP%29%20is%20a,is%2C%20and%20it%20is%20indeed%20an%20intriguing%20construct.>
+
+	
+
+## Tutorial 7- Type Erasure <a name="tut7"/>  
+
+Usually, similar tutorials start with explaining different meanings of the type erasure in different languages.  
+For some personal reasons, which I reveal later on, I'll pursuit the same approach here - starting with type erasure in Java.  
+
+### Java type erasure
+
+In Java, templates were not originally included into language core.  
+Instead, being inspired with C++, generics are for the first time introduced with Java SE5.  
+For the reason of _migration compatibility_ with older non-generic code, instead of **reification** (retaining the type info at run-time:  
+converting the parameterized type into concreate one through specialization), the generics are implemented using type erasure [^oracle].
+	
+What does it actually mean?  
+
+Having code like this in Java  
+	
+```java
+public static <T> List<T> filter(T[] in, Predicate<T> p)
+{
+    List<T> out = new ArrayList<>();
+    for (T el : in) {
+        if (p.test(el)) { // filter criteria
+            out.add(el);
+        }
+    }
+    
+    return out;
+}
+```
+will result in parameterized type T being internally substituted with supreme _Object_ type: **T->Object**  
+This doesn't give us a lot flexibility. We can't write, as with C++, something like  
+
+```c++
+template <typename T>
+class A 
+{
+  public:
+        explicit A(T obj) : m_obj(std::move(obj))
+        {}
+        void foo()
+        {
+           m_obj.doSomething();
+        }
+              
+  private:
+        T m_obj;
+};
+```
+since _Object_ interface doesn't have "_doSomething_" method.  
+We can't use any run-time construct like _new_, _instanceof_, or any reflection indeed,  
+since we don't have type information at run-time: it's stripped away,  treating any parameterized type as _Object_.  
+	
+What is the benefit of that - why don't we use the _Object_ directly instead?  
+
+There are (at least) two reasons:  
+* We express with T the intention - generic type (code)
+* Type-safety: we still have compile-time type check
+
+Consider this code
+```java
+public static void printAnyList(List<?> list) {
+    for (Object el : list) {
+        System.out.println(el);
+    }
+}
+```
+and
+```java
+public static void printObjectList(List<Object> list) {
+    for (Object el : list) {
+        System.out.println(el);
+    }
+}
+```
+where the body of these two methods is the same, but only the first one (argument) is truly generic  
+
+```java
+List<Integer> list = Arrays.asList(new Integer[]{1,2,3});
+printAnyList(list); // OK: List<Integer> is subtype of List<?>
+printObjectList(list); // Error: List<Integer> and List<Object> are not related!
+```
+We can make this more useful, by bounding the type erasure with some more concreate type than _Object_.  
+We can bound type erasure to the **upper bound**:  _<? extends T>_ (T and all subtypes of T)  
+
+```java
+public static void startVehicles(List<? extends Vehicle> vehicles) {
+    for (Vehicle vehicle : vehicles) {
+        vehicle.drive();
+        …
+    }
+}
+```
+or we can bound it to the **lower bound**: _<? super T>_ (T and all super-types of T)  
+
+```java
+public static void addCars(List<? super Car> vehicles, Car[] cars) {
+    // Collections.addAll(vehicles, cars);
+    for (Car car : cars) {
+       vehicles.add(car);
+    }
+}
+```
+
+And now, moment of true: With this digression, I wanted to make an homage to one of my favorite author, Bruce Eckel[^bruce].  
+Secondly, working on Android platform, a part of native code in C++, we also heavily use Java(Kotlin) as well.  
+
+### C++ type erasure
+
+In C++ type erasure has nothing to do with compiler - it's all about design.  
+It's powerful **design technic**.  
+As **Klaus Iglberger**[^klaus] pointed out in his excellent talk, these are three  
+pillars of this technic:
+* External polymorphism (and some other patterns)
+* templated constructor (of the enclosing class)
+* non-virtual interface (of the enclosing class)
+
+#### External Polymorphism
+
+It's design pattern that enables treating (in terms of algorithms) by inheritance unrelated - different types as they polymorphically same:  
+as they have a common interface.  
+As stated in accompanied article[^external], one of the reasons for using this technic would be in case that you have classes  
+originated from different 3<sup>rd</sup> party libraries for which you can't introduced the common ancestor in the inheritance tree,  
+and then lately in code upcast them to this common base pointer (dynamic polymorphism).  
+
+Instead, we introduce desired _adaptation interface_.  
+
+Let assume that we want to have a way for logging these classes on some logging medium.  
+We specify following adaptation interface, that will be used as a _gateway_ for all these unrelated types  
+
+```c++
+struct Logging
+{
+    virtual ~Logging() = default;
+    virtual void log() const = 0;
+    
+    protected:
+        Logging() = default;
+};
+```
+Now we introduce the implementation of the interface that is "type agnostic"  
+  
+```c++
+template <typename T, typename Logger>
+class LoggingImpl final : public Logging
+{
+    public:
+        LoggingImpl(const T& type, const Logger& logger) noexcept :
+              m_obj(type)
+            , m_logger(logger)
+        {}
+
+        ~LoggingImpl() override = default;
+
+        void log() const override
+        {
+              // m_logger.log(dump<T>(m_obj)); // template helper function
+               m_logger.log(dump(m_obj)); // free function
+        }
+
+    private:
+        const T& m_obj; // unmutable object to log
+        const Logger& m_logger; // unmutable logger itself
+};
+```
+Actually, any type candidate, would need eventually to adapt its dumping signature, in order to be invoked  
+uniformly - in polymorphic way.  
+This is here done with the  _dump()_ call, as a "signature adapter".  
+This can be either a free function, or a template helper function  
+
+```c++
+template <typename T>
+std::string dump(const T& t)
+{
+    return t.toString();  // this would assume that most of the classes have already the same "java-like" signature
+}
+```
+and for those types who don't share the same signature - we have overloading (full) specialization  
+
+```c++
+std::string dump<A>(const A& a)
+{
+    return a.print();
+}
+```
+Follow the [link](/src/Tutorial%207/external_polymorphism) to see the complete source code.  
+
+
+Let's go one step back - to the behavioral aspect of the (erased) type.  
+We specify through the interface, the behavioral affordances as a gateway for parameterized   
+type-specific implementation that needs to cope with it, without imposing any relationship between types - through inheritance.  
+It's also known as [duck typing](https://en.wikipedia.org/wiki/Duck_typing) - what behaves as a duck,  
+will be considered as a duck. 
+This allows us to keep the interface and its parameterized type based implementation private (_pimpl idiom_).
+For that, we need an enclosing - wrapper type  
+
+```c++
+class Vehicle final
+{
+    private:
+      // Interface
+      struct VehicleConcept
+      {
+          virtual ~VehicleConcept() = default;
+          virtual void drive(drive_type type) const = 0;
+          virtual void configure() = 0;
+        protected:
+          VehicleConcept() = default;
+      };
+
+      // Internal parameterized type based implementation (pimpl idiom)
+      template <typename VehicleType, typename Configurator>
+      class VehicleConceptImpl : public VehicleConcept
+      {
+        public:
+           using vehicle_type = VehicleType;
+           using configurator_type = Configurator;
+
+           VehicleConceptImpl(VehicleType&& vehicle, Configurator&& configurator) noexcept
+               : m_vehicle(std::move(vehicle)) // take the ownership over the type
+               , m_configurator(std::move(configurator))
+           {}
+
+           // Interface implementation
+           void drive(drive_type type) const override
+           {
+               m_vehicle.drive(type);
+           }
+
+           void configure() override
+           {
+               m_configurator.configure(m_vehicle);
+           }
+
+         private:
+           vehicle_type m_vehicle;
+           configurator_type m_configurator;
+       };
+
+       // the rest of code as non-virtual public interface
+};
+```
+
+and therefore the appropriate - **templated constructor**: as an entry point for customization  
+
+```c++
+class Vehicle
+{
+  public:
+    template <typename VehicleType, typename Configurator>
+    Vehicle(VehicleType&& vehicle, Configurator&& configurator)
+        : m_vehicle(std::make_unique<VehicleConceptImpl>(std::move(vehicle), std::move(configurator)))
+    {}
+  private:
+    std::unique_ptr<VehicleConcept> m_vehicle; 
+}
+```
+
+In order to use our enclosing type with **"value semantics"** - to design the user-defined type as an built-in type,  
+that can be created on the stack, copied/moved, etc., we need to extend the initial interface with so called  
+"virtual copy-constructor"[^johnatan]  
+
+```c++
+// Interface
+struct VehicleConcept
+{
+    virtual std::unique_ptr<VehicleConcept> clone() const = 0;   
+};
+
+// Internal interface implementation
+template <typename VehicleType, typename Configurator>
+class VehicleConceptImpl : public VehicleConcept
+{
+  public:
+    std::unique_ptr<VehicleConcept> clone() const override
+    {
+        return std::make_unique<VehicleConceptImpl>(*this);
+    }
+};
+```
+
+This allows us to write the missing copy functions  
+
+```c++
+class Vehicle
+{
+  public:
+    // Copy functions - to support value semantics
+    Vehicle(const Vehicle& other) : m_vehicle(other.m_vehicle->clone())
+    {}
+	
+    Vehicle& operator = (const Vehicle& other)
+    {
+        m_vehicle = other.m_vehicle->clone();
+	return *this;
+    }
+};
+```
+
+This is also known as _Prototype pattern_.  
+The complete code is available at following [link](/src/Tutorial%207/type_erasure)
+
+To summarize.  
+
+#### Pros
+* It outperforms the classical polymorphism in terms of  
+    * Tamed inheritance hierarchy, which is handled internally only at the single level 
+    * Easily extendable (OCP), since the compiler will fabricate for each compatible type a new variant
+    * Clear separation of concerns (SRP)
+* It outperforms the Dependency Injection as well in terms of performance, since introduces the value semantics  
+and reduce the number of small allocations as result of injecting dependent object(s)
+![Dependency Injection](Images/Vehicle_Platform_Dependency.png)  
+	
+		
+#### Cons
+* It requires a lot of boilerplate code, by specifying the behavioral affordances through interface, that will be internally  
+implemented by simple wrapping it around the parameterized type implementation, and non-virtual interface of the enclosing class  
+for forwarding the calls to the private implementation (pimpl idiom). 
+* It's still run-time polymorphism, and therefore not such efficient as [static polymorphism](#tut6)
 
 ### References
 
-[^1]: [_Mixin-Based Programming in C++_, Yannis Smaragdakis, Don Batory](https://yanniss.github.io/practical-fmtd.pdf)
-[^2]: [_Modern C++ desing_, Andrei Alexandrescu](https://en.wikipedia.org/wiki/Modern_C%2B%2B_Design)  
-[^3]: [_Loki library_](https://github.com/snaewe/loki-lib/blob/master/include/loki/Threads.h)
-[^4]: [_Fluent C++_](https://www.fluentcpp.com/2017/05/12/curiously-recurring-template-pattern/#:~:text=The%20Curiously%20Recurring%20Template%20Pattern%20%28CRTP%29%20is%20a,is%2C%20and%20it%20is%20indeed%20an%20intriguing%20construct.)
-  
+[^oracle]: [Java generics, Oracle](https://docs.oracle.com/javase/tutorial/java/generics/erasure.html)  
+[^bruce]: [Thinking in Java 4th edition, Bruce Eckel](https://en.wikipedia.org/wiki/Thinking_in_Java)  
+[^klaus]: [Type Erasure, Klaus Iglberger](https://www.youtube.com/watch?v=jKt6A3wnDyI)  
+[^johnatan]: [Type Erasure, Johnatan Müller](https://www.foonathan.net/2020/01/type-erasure/)  
+[^external]: [External Polymorphism, Chris Cleeland](http://www.dre.vanderbilt.edu/~schmidt/PDF/External-Polymorphism.pdf)  
+
+
