@@ -1146,7 +1146,7 @@ public static void addCars(List<? super Car> vehicles, Car[] cars) {
 }
 ```
 
-And now, moment of true: With this digression, I wanted to make an homage to one of my favorite author, Bruce Eckel[^bruce].  
+And now, moment of true: With this digression, I wanted to make an homage to one of my favorite authors, Bruce Eckel[^bruce].  
 Secondly, working on Android platform, a part of native code in C++, we also heavily use Java(Kotlin) as well.  
 
 ### C++ type erasure
@@ -1231,11 +1231,10 @@ Follow the [link](/src/Tutorial%207/external_polymorphism) to see the complete s
 
 
 Let's go one step back - to the behavioral aspect of the (erased) type.  
-We specify through the interface, the behavioral affordances as a gateway for parameterized   
-type-specific implementation that needs to cope with it, without imposing any relationship between types - through inheritance.  
-It's also known as [duck typing](https://en.wikipedia.org/wiki/Duck_typing) - what behaves as a duck,  
-will be considered as a duck. 
-This allows us to keep the interface and its parameterized type based implementation private (_pimpl idiom_).
+We specify through the interface, the behavioral affordances as a _gateway_ for parameterized   
+type specific implementation that needs to cope with it, without imposing any relationship between types - through inheritance.  
+It's also known as [duck typing](https://en.wikipedia.org/wiki/Duck_typing) - what behaves as a duck, will be considered as a duck.  
+This allows us to keep the interface and its parameterized type based implementation private (_pimpl idiom_).  
 For that, we need an enclosing - wrapper type  
 
 ```c++
@@ -1254,7 +1253,7 @@ class Vehicle final
 
       // Internal parameterized type based implementation (pimpl idiom)
       template <typename VehicleType, typename Configurator>
-      class VehicleConceptImpl : public VehicleConcept
+      class VehicleConceptImpl final : public VehicleConcept
       {
         public:
            using vehicle_type = VehicleType;
@@ -1348,7 +1347,7 @@ To summarize.
 
 #### Pros
 * It outperforms the classical polymorphism in terms of  
-    * Tamed inheritance hierarchy, which is handled internally only at the single level 
+    * Tamed inheritance hierarchy, which is handled internally only at the single level (place)
     * Easily extendable (OCP), since the compiler will fabricate for each compatible type a new variant
     * Clear separation of concerns (SRP)
 * It outperforms the Dependency Injection as well in terms of performance, since introduces the value semantics  
