@@ -1237,8 +1237,7 @@ Let's go one step back - to the behavioral aspect of the (erased) type.
 We specify through the interface, the behavioral affordances as a _gateway_ for parameterized   
 type specific implementation that needs to cope with it, without imposing any relationship  
 between types - through inheritance.  
-It's also known as [duck typing](https://en.wikipedia.org/wiki/Duck_typing) - what behaves as a duck,  
-will be considered as a duck.  
+It's also known as [duck typing](https://en.wikipedia.org/wiki/Duck_typing) - what behaves as a duck, will be considered as a duck.  
 This allows us to keep the interface and its parameterized type based implementation private (_pimpl idiom_).  
 For that, we need an enclosing - wrapper type  
 
@@ -1363,7 +1362,7 @@ and reduce the number of small allocations as result of injecting dependent obje
 #### Cons
 * It requires a lot of boilerplate code, by specifying the behavioral affordances through interface, that will be internally  
 implemented by simple wrapping it around the parameterized type implementation, and non-virtual interface of the enclosing class for forwarding the calls to the private implementation (pimpl idiom).  
-* It still employs virtual dispatch, and therefore is not such efficient as [static polymorphism](#tut6)
+* It still employs virtual dispatching, and therefore is not such efficient as [static polymorphism](#tut6)
 
 ### References
 
