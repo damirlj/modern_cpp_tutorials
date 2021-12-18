@@ -1046,14 +1046,19 @@ The complete source code with examples is available at: [**Tutorial 6**](/src/Tu
 ## Tutorial 7- Type Erasure <a name="tut7"/>  
 
 Usually, similar tutorials start with explaining different meanings of the type erasure in different languages.  
-For some personal reasons, which I reveal later on, I'll pursuit the same approach here - starting with type erasure in Java.  
+I'll pursuit the same approach here - starting with type erasure in Java.  
+Working on Android platform, beside of native code in C++, we also heavily use Java(Kotlin) as well.  
+Secondly, I wanted to make an homage to one of my favorite authors, Bruce Eckel[^bruce].  
+
 
 ### Java type erasure
 
 In Java, templates were not originally included into language core.  
 Instead, being inspired with C++, generics are for the first time introduced with Java SE5.  
-For the reason of _migration compatibility_ with older non-generic code, instead of **reification** (retaining the type info at run-time:  
-converting the parameterized type into concreate one through specialization), the generics are implemented using type erasure [^oracle].
+For the reason of _migration compatibility_ with older non-generic code, instead of **reification**  
+(retaining the type info at run-time: converting the parameterized type into concreate one through specialization),  
+the generics are implemented using type erasure [^oracle].  
+
 	
 What does it actually mean?  
 
@@ -1072,7 +1077,7 @@ public static <T> List<T> filter(T[] in, Predicate<T> p)
     return out;
 }
 ```
-will result in parameterized type T being internally substituted with supreme _Object_ type: **T->Object**  
+will result in parameterized type T being internally substituted with root base _Object_ type: **T->Object**  
 This doesn't give us a lot flexibility. We can't write, as with C++, something like  
 
 ```c++
@@ -1146,14 +1151,11 @@ public static void addCars(List<? super Car> vehicles, Car[] cars) {
 }
 ```
 
-And now, moment of true: With this digression, I wanted to make an homage to one of my favorite authors, Bruce Eckel[^bruce].  
-Secondly, working on Android platform, a part of native code in C++, we also heavily use Java(Kotlin) as well.  
-
 ### C++ type erasure
 
 In C++ type erasure has nothing to do with compiler - it's all about design.  
 It's powerful **design technic**.  
-As **Klaus Iglberger**[^klaus] pointed out in his excellent talk, these are three  
+As **Klaus Iglberger**[^klaus] pointed out in his excellent talk, these are three main  
 pillars of this technic:
 * External polymorphism (and some other patterns)
 * templated constructor (of the enclosing class)
@@ -1161,11 +1163,12 @@ pillars of this technic:
 
 #### External Polymorphism
 
-It's design pattern that enables treating (in terms of algorithms) by inheritance unrelated - different types as they polymorphically same:  
-as they have a common interface.  
-As stated in accompanied article[^external], one of the reasons for using this technic would be in case that you have classes  
-originated from different 3<sup>rd</sup> party libraries for which you can't introduced the common ancestor in the inheritance tree,  
-and then lately in code upcast them to this common base pointer (dynamic polymorphism).  
+It's design pattern that enables treating (in terms of algorithms) by inheritance unrelated - different types  
+as they polymorphically same: as they have a common interface.  
+As stated in accompanied article[^external], one of the reasons for using this technic would be  
+in case that you have classes originated from different 3<sup>rd</sup> party libraries for which you can't introduce  
+common ancestor in the inheritance tree, and then lately in code upcast them to this common base pointer  
+(dynamic polymorphism).  
 
 Instead, we introduce desired _adaptation interface_.  
 
@@ -1232,8 +1235,10 @@ Follow the [link](/src/Tutorial%207/external_polymorphism) to see the complete s
 
 Let's go one step back - to the behavioral aspect of the (erased) type.  
 We specify through the interface, the behavioral affordances as a _gateway_ for parameterized   
-type specific implementation that needs to cope with it, without imposing any relationship between types - through inheritance.  
-It's also known as [duck typing](https://en.wikipedia.org/wiki/Duck_typing) - what behaves as a duck, will be considered as a duck.  
+type specific implementation that needs to cope with it, without imposing any relationship  
+between types - through inheritance.  
+It's also known as [duck typing](https://en.wikipedia.org/wiki/Duck_typing) - what behaves as a duck,  
+will be considered as a duck.  
 This allows us to keep the interface and its parameterized type based implementation private (_pimpl idiom_).  
 For that, we need an enclosing - wrapper type  
 
@@ -1284,7 +1289,7 @@ class Vehicle final
 };
 ```
 
-and therefore the appropriate - **templated constructor**: as an entry point for customization  
+and therefore the appropriate - **templated constructor** : as an entry point for customization  
 
 ```c++
 class Vehicle
@@ -1299,9 +1304,9 @@ class Vehicle
 }
 ```
 
-In order to use our enclosing type with **"value semantics"** - to design the user-defined type as an built-in type,  
-that can be created on the stack, copied/moved, etc., we need to extend the initial interface with so called  
-"virtual copy-constructor"[^johnatan]  
+In order to use our enclosing type with **"value semantics"** - to design the user-defined type  
+as an built-in type, that can be created on the stack, copied/moved, etc., we need to extend the  
+initial interface with so called "virtual copy-constructor"[^johnatan]  
 
 ```c++
 // Interface
@@ -1357,8 +1362,7 @@ and reduce the number of small allocations as result of injecting dependent obje
 		
 #### Cons
 * It requires a lot of boilerplate code, by specifying the behavioral affordances through interface, that will be internally  
-implemented by simple wrapping it around the parameterized type implementation, and non-virtual interface of the enclosing class  
-for forwarding the calls to the private implementation (pimpl idiom). 
+implemented by simple wrapping it around the parameterized type implementation, and non-virtual interface of the enclosing class for forwarding the calls to the private implementation (pimpl idiom).  
 * It still employs virtual dispatch, and therefore is not such efficient as [static polymorphism](#tut6)
 
 ### References
