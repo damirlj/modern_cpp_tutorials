@@ -1097,7 +1097,7 @@ class A
 };
 ```
 since _Object_ interface doesn't have "_doSomething_" method.  
-We can't use any run-time construct like _new_, _instanceof_, or any reflection indeed,  
+We can't use any run-time constructs like _new_, _instanceof_, or any reflection indeed,  
 since we don't have type information at run-time: it's stripped away,  treating any parameterized type as _Object_.  
 	
 What is the benefit of that - why don't we use the _Object_ directly instead?  
@@ -1263,7 +1263,7 @@ class Vehicle final
            using vehicle_type = VehicleType;
            using configurator_type = Configurator;
 
-           VehicleConceptImpl(VehicleType&& vehicle, Configurator&& configurator) noexcept
+           VehicleConceptImpl(VehicleType vehicle, Configurator configurator) noexcept
                : m_vehicle(std::move(vehicle)) // take the ownership over the type
                , m_configurator(std::move(configurator))
            {}
@@ -1296,10 +1296,12 @@ class Vehicle
   public:
     template <typename VehicleType, typename Configurator>
     Vehicle(VehicleType&& vehicle, Configurator&& configurator)
-        : m_vehicle(std::make_unique<VehicleConceptImpl>(std::move(vehicle), std::move(configurator)))
+        : m_vehicle(std::make_unique<VehicleConceptImpl>(
+              std::forward<VehicleType>(vehicle)
+            , std::forward<Configurator>(configurator)))
     {}
   private:
-    std::unique_ptr<VehicleConcept> m_vehicle; 
+    mutable std::unique_ptr<VehicleConcept> m_vehicle; 
 }
 ```
 
