@@ -64,7 +64,7 @@ namespace test::erasure
                     using vehicle_type = VehicleType;
                     using configurator_type = Configurator;
 
-                    VehicleConceptImpl(vehicle_type&& vehicle, configurator_type&& configurator) noexcept :
+                    VehicleConceptImpl(vehicle_type vehicle, configurator_type configurator) noexcept :
                           m_vehicle(std::move(vehicle)) // if type is not movable: fall through, calling copy-constructor instead
                         , m_configurator(std::move(configurator))
                     {}
@@ -94,10 +94,10 @@ namespace test::erasure
             // Templated c-tor of enclosing class as customization point
 
             template <typename VehicleType, typename Configurator>
-            Vehicle(VehicleType&& vehicle, Configurator&& configurator) noexcept
+            Vehicle(VehicleType&& vehicle, Configurator&& configurator) 
                 : m_vehicle(std::make_unique<VehicleConceptImpl<VehicleType, Configurator>>(
-                        std::move(vehicle),
-                        std::move(configurator)))
+                        std::forward<VehicleType>(vehicle),
+                        std::forward<Configurator>(configurator)))
             {}
 
             // For supporting value semantics.
