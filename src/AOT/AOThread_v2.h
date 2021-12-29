@@ -50,6 +50,7 @@ namespace utils::aot
     }
 
     /**
+     * Type Erasure
      * For wrapping the only copy-constructible callable objects
      * into movable object, since std::packaged_task is move-only
      * The solution is taken from "Concurrency in action" Anthony Williams
@@ -63,7 +64,7 @@ namespace utils::aot
         };
 
         template <typename Func>
-        struct FunctionWrapperBaseImpl : FunctionWrapperBase
+        struct FunctionWrapperBaseImpl final : FunctionWrapperBase
         {
                 FunctionWrapperBaseImpl(Func&& func):
                     m_func(std::move(func))
@@ -88,7 +89,7 @@ namespace utils::aot
             FunctionWrapper() = default;
             ~FunctionWrapper() = default;
 
-            FunctionWrapper(FunctionWrapper&& other):m_pFunctionWrapper(std::move(other.m_pFunctionWrapper))
+            FunctionWrapper(FunctionWrapper&& other) : m_pFunctionWrapper(std::move(other.m_pFunctionWrapper))
             {}
             FunctionWrapper& operator=(FunctionWrapper&& other)
             {
