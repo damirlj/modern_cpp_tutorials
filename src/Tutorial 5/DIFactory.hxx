@@ -34,7 +34,7 @@ namespace utils::di
 
         public:
 
-            static decltype(auto) createFactory(Args&&...args)
+            static auto createFactory(Args&&...args)
             {
                 return std::unique_ptr<IFactory<DIServiceInterface>>(new (std::nothrow)
                         DIFactory(std::forward<Args>(args)...));
@@ -92,7 +92,7 @@ namespace utils::di
     };
 
     template <typename DIServiceInterface, typename DIService, typename...Args>
-    decltype(auto) make_factory(Args&&...args) noexcept
+    auto make_factory(Args&&...args) noexcept
     {
         return DIFactory<DIServiceInterface, DIService, Args...>::createFactory(
                 std::forward<Args>(args)...);
