@@ -796,14 +796,13 @@ to the templetized base class, similar to  the _Decorator_ design pattern.
 Difference is that there is no _"is a"_ relationship between the mixin - host class, and the base class - they  
 don't share the same interface, but rather they encapsulate different - orthogonal features.  
 It's also known as collaborator-based (or role-based) design, where each mixin class has a distinguished role - 
-that can be easily combined with other roles - into resulting type which embeds all of these roles.
+that can be easily combined with other roles - into resulting type which embeds all of these roles.  
 
 There are two issues that should be considered, when we use mixin technic in our design:  
 	
 #### Scalability  
 	
-Problem: With linear mixing: `Mixin_1<...<Mixin_n<A>...>`, the resulting type can become quite complex  
-and eventually unmanageable.  
+Problem: With linear mixing: `Mixin_1<...<Mixin_n<A>...>`, the resulting type can become quite complex and eventually unmanageable.  
 For overcoming this issue, so called  [`Mixin Layer`][1][<sup>1</sup>] is introduced.  
 Each layer represents a single collaboration, capturing the related roles in form of inner mixins  
 
@@ -823,8 +822,7 @@ This way we relax the resulting syntax and have more scalable way of exercising 
 #### Passing the data - constructing the mixins  
 
 Constructing the result type by passing innermost non-mixin class _constructor overload set_  
-to all mixin subclasses, including the outermost one:  
-`using Super::Super`  
+to all mixin subclasses, including the outermost one:  `using Super::Super`  
 This works for the case where the mixin classes only contribute with additional functionality (are _stateless_), and therefore being  
 default constructible  
 	
@@ -966,7 +964,7 @@ class Base : public Implementation
     private:
         Implementation& impl()
         {
-            return *static_cast<Implementation*>(this);
+            return static_cast<Implementation&>(*this);
         }
 };
 ```  
