@@ -1007,7 +1007,7 @@ class Client
         }
 
     private:
-       std::unique_ptr<A> m_ptrA;
+       std::unique_ptr<Base<A>> m_ptrA;
 };
 ```
 	
