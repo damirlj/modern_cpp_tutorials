@@ -777,8 +777,7 @@ The complete source code with examples is available at: [Tutorial 5](/src/Tutori
 	
 ## Tutorial 6 - Static polymorphism (or three little pigs) <a name="tut6"/>
 
-Static polymorphism is a collection of the template-based technics to have configurable code, where all dependencies are resolved  
-at the compile-time, through the template instantiation.  
+Static polymorphism is a collection of the template-based technics to have configurable code, where all dependencies are resolved at the compile-time, through the template instantiation.  
 One can understand this as a static [dependency injection](#tut5)  
 
 ![Three little pigs](Images/three_little_pigs.png) 
@@ -802,7 +801,7 @@ There are two issues that should be considered, when we use mixin technic in our
 	
 #### Scalability  
 	
-Problem: With linear mixing: `Mixin_1<...<Mixin_n<A>...>`, the resulting type can become quite complex and eventually unmanageable.  
+Problem: With linear mixing: `Mixin_1<...Mixin_n<A>...>`, the resulting type can become quite complex and eventually unmanageable.  
 For overcoming this issue, so called  [`Mixin Layer`][1][<sup>1</sup>] is introduced.  
 Each layer represents a single collaboration, capturing the related roles in form of inner mixins  
 
@@ -823,8 +822,8 @@ This way we relax the resulting syntax and have more scalable way of exercising 
 
 Constructing the result type by passing innermost non-mixin class _constructor overload set_  
 to all mixin subclasses, including the outermost one:  `using Super::Super`  
-This works for the case where the mixin classes only contribute with additional functionality (are _stateless_), and therefore being  
-default constructible  
+This works for the case where the mixin classes only contribute with additional functionality (are _stateless_),  
+and therefore being default constructible  
 	
 ```c++
 template <typename Super>
@@ -870,12 +869,9 @@ The source code which demonstrates using of this technic: [**mixin**](/src/Tutor
 ### Policy-based design (Pig#2)
 
 Apparently, the term is first used in the [book][2][<sup>2</sup>] which had the major impact on the future development of the entire language.  
-It's another aspect of the parameterized inheritance, where this time the functionality of the template class (policy) is plugged-in into the  
-interface of the derived - host class, through inheritance (pubic or private).  
-It can be seen as _strategy design pattern at compile-time_, where at client side a different policy implementations can be introduced,  
-which makes the code highly configurable - especially for the library  writers.  
-When we talk about policies, we talk about the different (*postponed*) design decisions that customize the generic code at client side  
-to fulfill certain requirements, as for  
+It's another aspect of the parameterized inheritance, where this time the functionality of the template class (policy) is plugged-in into the interface of the derived - host class, through inheritance (public or private).  
+It can be seen as _strategy design pattern at compile-time_, where at client side a different policy implementations can be introduced, which makes the code highly configurable - especially for the library  writers.  
+When we talk about policies, we talk about the different (*postponed*) design decisions that customize the generic code at client side to fulfill certain requirements, as for  
 * locking (whether it will be used in single-thread, or multi-thread environment)
 * allocation (on the heap, or stack)
 * logging (on console, file system, or data base)  
