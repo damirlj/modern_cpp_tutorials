@@ -124,7 +124,15 @@ namespace utils::aot
 
 
             AOThread() = default;
-            ~AOThread() = default;
+            ~AOThread()
+            {
+                /*
+                 * It's important to wait on thread to join first, to prevent destruction
+                 * of remaining member variables in undesirable order - invalidating the mutex and
+                 * condition variable before thread being joined.
+                 */
+                stop();
+            }
 
             AOThread(const AOThread& ) = delete;
             AOThread& operator = (const AOThread&) = delete;
@@ -189,13 +197,15 @@ namespace utils::aot
 
             void stop()
             {
-                using namespace std;
+                if (!m_pThread) return;
+
                 {
-                    lock_guard<std::mutex> lock {m_lock};
+                    std::lock_guard<std::mutex> lock {m_lock};
                     m_stopThread = true;
                 }
-
                 m_condition.notify_one();
+
+                m_pThread.reset(nullptr); // wait on thread to join
             }
 
         private:
