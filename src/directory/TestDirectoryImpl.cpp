@@ -21,6 +21,7 @@ namespace utils::files
         const vector<path> paths =
         {
             "./src/directory",
+            "./src/FileStreams"
         };
 
         for (const auto& p : paths)
