@@ -151,11 +151,15 @@ We can write a generic class, with variadic number of parameters, stored into tu
 To do that, we use *std::tie()* call
 
 ```c++
+
 template <class T, class = void>
 struct is_optional_t : std::false_type {};
 
 template <class T>
 struct is_optional_t<T, std::void_t<decltype(T::valid),	decltype(T::value)>> : std::true_type {};
+
+template <class T>
+static constexpr bool is_optional_v = is_optional_t<T>::value;
 
 template <typename...Args>
 class Setter
@@ -167,8 +171,8 @@ class Setter
         explicit Setter(std::tuple<Args&...>& values) noexcept : m_values(values)
         {}
 
-        template <std::size_t I, typename Value>
-        Setter& set(Value&& value)
+        template <std::size_t I, typename Arg>
+        Setter& set(Arg&& arg)
         {
 
             /*
@@ -177,28 +181,51 @@ class Setter
              *
              */
             auto& opt = std::get<I>(m_values);
-            if constexpr (is_optional_t<Value>::value)
+            static_assert(is_optional_v<std::decay_t<decltype(opt)>>);
+            
+            if constexpr (is_optional_v<std::decay_t<Arg>>)
             {
-                // In case that there is no proper c-tor: for POD like type
-                opt.valid = true;
-                opt.value = std::forward<Value>(value).value;
+                opt = std::forward<Arg>(arg);
             }
             else
             {
-                opt = std::forward<Value>(value);
+                opt.valid = true;
+                opt.value = std::forward<Arg>(arg);
             }
 
             return *this;
         }
 
-        ...
+        template <typename...Values, typename Indices = std::index_sequence_for<Values...>>
+        void setAll(Values&&...values)
+        {
+            setAllImpl(Indices{}, std::forward<Values>(values)...);
+        }
 
+        template <std::size_t index>
+        decltype(auto) get() const 
+        {
+            return std::get<index>(m_values); 
+        }
+
+    private:
+
+        template <std::size_t...I, typename...Values>
+        void setAllImpl(std::index_sequence<I...>, Values&&...values)
+        {
+            if constexpr (sizeof...(I) == 0) return;
+            (set<I>(std::forward<Values>(values)),...);
+        }
+
+        
     private:
 
         std::tuple<Args&...> m_values; // Store arguments as lvalue references!
         static constexpr size_t N = sizeof...(Args);
 };
+
 ```
+Check the full example in the [Compiler Explorer](https://godbolt.org/z/fffTEKshM)
 
 **Second use-case** would be for user-defined types, where you want to provide class specific 
 *“less than”* comparison operator, in order to be able to ascending sort the collection of this type using f.e. *std::sort*
