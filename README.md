@@ -199,7 +199,7 @@ class Setter
         template <typename...Values, typename Indices = std::index_sequence_for<Values...>>
         void setAll(Values&&...values)
         {
-	        static_assert(N >= sizeof...(Values), "Invalid number of arguments!");
+            static_assert(N >= sizeof...(Values), "Invalid number of arguments!");
             setAllImpl(Indices{}, std::forward<Values>(values)...);
         }
 
