@@ -222,7 +222,7 @@ class Setter
     private:
 
         std::tuple<Args&...> m_values; // Store arguments as lvalue references!
-        static constexpr size_t N = sizeof...(Args);
+        static constexpr std::size_t N = sizeof...(Args);
 };
 
 ```
