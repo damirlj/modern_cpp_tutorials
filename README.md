@@ -206,6 +206,7 @@ class Setter
         template <std::size_t index>
         decltype(auto) get() const 
         {
+            static_assert(N > index, "Index out of range!");
             return std::get<index>(m_values); 
         }
 
@@ -226,7 +227,7 @@ class Setter
 };
 
 ```
-Check the full example in the [Compiler Explorer](https://godbolt.org/z/fffTEKshM)
+Check the full example in the [Compiler Explorer](https://godbolt.org/z/o9Wj8MoYx)
 
 **Second use-case** would be for user-defined types, where you want to provide class specific 
 *“less than”* comparison operator, in order to be able to ascending sort the collection of this type using f.e. *std::sort*
