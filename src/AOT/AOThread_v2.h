@@ -127,9 +127,11 @@ namespace utils::aot
             ~AOThread()
             {
                 /*
-                 * It's important to wait on thread to join first, to prevent destruction
-                 * of remaining member variables in undesirable order - invalidating the mutex and
-                 * condition variable before thread being joined.
+                 * It's important to declare the mutex/conditional_variable first, then the job queue,
+                 * and finally the thread itself to ensure the proper destruction in 
+                 * reversable order.
+                 * Otherwise, we would need to force joining the thread explicitly, to prevent
+                 * any undesirable effects (crashes)
                  */
                 stop();
             }
@@ -243,13 +245,16 @@ namespace utils::aot
         private:
 
             bool m_stopThread = false;
-
-            thread_with_deleter_t<std::thread> m_pThread = nullptr;
-            std::queue<FunctionWrapper> m_jobs;
-
-
+            
+           // @note: Order of declaration is important!
+        
             std::mutex m_lock;
             std::condition_variable m_condition;
+        
+            std::queue<FunctionWrapper> m_jobs;
+
+            thread_with_deleter_t<std::thread> m_pThread = nullptr;
+           
     };
 }
 
