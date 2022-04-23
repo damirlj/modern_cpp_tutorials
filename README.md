@@ -209,14 +209,26 @@ class Setter
             static_assert(N > index, "Index out of range!");
             return std::get<index>(m_values); 
         }
+        
+        template <typename Func>
+        void for_each(Func func)
+        {
+            for_eachImpl(func, std::make_index_sequence<N>{});
+        }
 
     private:
 
-        template <std::size_t...I, typename...Values>
-        void setAllImpl(std::index_sequence<I...>, Values&&...values)
+        template <std::size_t...Is, typename...Values>
+        void setAllImpl(std::index_sequence<Is...>, Values&&...values)
         {
-            if constexpr (sizeof...(I) == 0) return;
-            (set<I>(std::forward<Values>(values)),...);
+            if constexpr (sizeof...(Is) == 0) return;
+            (set<Is>(std::forward<Values>(values)),...);
+        }
+	
+        template <typename Func, std::size_t...Is>
+        void for_eachImpl(Func func, std::index_sequence<Is...>)
+        {
+            (func(get<Is>()), ...);
         }
 
         
@@ -227,7 +239,7 @@ class Setter
 };
 
 ```
-Check the full example in the [Compiler Explorer](https://godbolt.org/z/o9Wj8MoYx)
+Check the full example in the [Compiler Explorer](https://godbolt.org/z/Y4cKsb447)
 
 **Second use-case** would be for user-defined types, where you want to provide class specific 
 *“less than”* comparison operator, in order to be able to ascending sort the collection of this type using f.e. *std::sort*
