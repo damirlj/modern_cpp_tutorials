@@ -1,7 +1,5 @@
 //
-// <author> Damir Ljubic
-// email: damirlj@yahoo.com
-//
+// Created by dalj8690 on 29.04.2020.
 //
 
 #ifndef AIRPLAYSERVICE_THREADWRAPPER_H
@@ -32,18 +30,29 @@ namespace utils
 
         typedef void* (*thread_f)(void*);
 
-        // Using C POSIX APIs
-        static int createThreadWithPrio(pthread_t* handle, thread_f func, void* context, int priority)
+        /**
+         *  Create realtime thread with scheduling/priority
+         *
+         * @param handle The thread handle
+         * @param func The thread function
+         * @param context The thread function argument
+         * @param policy The realtime thread scheduling policy (supported SCHED_RR/SCHED_FIFO)
+         * @param priority The realtime thread priority: [1, 99]
+         * @return Indication of the operation outcome: 0 on success
+         */
+        static int createThreadWithPrio(pthread_t* handle, thread_f func, void* context, int policy, int priority)
         {
             int err = 0;
 
             pthread_attr_t attr;
             err = pthread_attr_init(&attr);
             if (err) [[unlikely]] { throw_runtime_with_err("<Thread> Failed: 'pthread_attr_init()': "); }
-            // Set the realtime round-robin schedule policy
 
-            err = pthread_attr_setschedpolicy(&attr, SCHED_RR);
+            // Set the realtime schedule policy
+
+            err = pthread_attr_setschedpolicy(&attr, policy);
             if (err) [[unlikely]] { throw_runtime_with_err("<Thread> Failed: 'pthread_attr_setschedpolicy(): '"); }
+
             // Set the priority
 
             struct sched_param param;
@@ -154,13 +163,34 @@ namespace utils
         using priority_t = int;
 
 
-        ThreadWrapper() = delete;
-
+        /**
+         * For creating the native thread by attaching it
+         * to the Java thread, from which context the thread priority - niceness
+         * will be set
+         *
+         * @param jvm The reference to the Java Virtual Machine
+         * @param priority The niceness of a thread : [-20,19]
+         * @param name The name of a thread
+         * @param func The thread function
+         * @param args The thread function arguments
+         *
+         * @note May throw!
+         */
         template <typename Func, typename... Args>
         [[maybe_unused]] ThreadWrapper(JavaVM* jvm, priority_t priority, std::string name, Func&& func, Args&&... args);
 
+        /**
+         * For creating realtime thread
+         *
+         * @param policy The realtime thread schedule policy (SCHED_RR/SCHED_FIFO)
+         * @param priority The realtime thread priority
+         * @param func Thread function
+         * @param args Thread function arguments
+         *
+         * @note May throw!
+         */
         template <typename Func, typename... Args>
-        [[maybe_unused]] ThreadWrapper(priority_t priority, Func&& func, Args&&... args);
+        [[maybe_unused]] ThreadWrapper(schedule_policy_t policy, priority_t priority, Func&& func, Args&&... args);
 
         ThreadWrapper(const super&) = delete;
         ThreadWrapper& operator=(const super&) = delete;
@@ -333,6 +363,7 @@ namespace utils
                 // Set priority (niceness): at Java side, otherwise EPERM will be returned
                 if (!jni::setThreadPriority(threadAnchor.get(), priority))
                     throw std::runtime_error("<Thread> Failed to call: 'jni::setThreadPriority()'");
+
                 // Set name: at native side
                 std::ignore = setName(name_);
                 // Native thread function
@@ -344,6 +375,7 @@ namespace utils
 
     template <typename Func, typename... Args>
     [[maybe_unused]] inline ThreadWrapper::ThreadWrapper(
+        utils::ThreadWrapper::schedule_policy_t policy,
         utils::ThreadWrapper::priority_t priority,
         Func&& func,
         Args&&... args)
@@ -351,7 +383,12 @@ namespace utils
     {
         auto threadFunc = std::bind(func, std::forward<Args>(args)..., std::placeholders::_1);
         // This may throw!
-        std::ignore = pthread::createThreadWithPrio(native_handle(), threadFunc, nullptr, priority);
+        std::ignore = pthread::createThreadWithPrio(
+            native_handle(),
+            threadFunc,
+            nullptr,
+            std::underlying_type_t<schedule_policy_t>(policy),
+            priority);
     }
 
     /**
