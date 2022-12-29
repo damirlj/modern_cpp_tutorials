@@ -8,6 +8,8 @@
 7. [Tutorial 6 - Static polymorphism (or three little pigs)](#tut6)
 8. [Tutorial 7 - Type erasure](#tut7)
 
+The remaining articles are available at: [*Documents*](/docs)
+
 ## Introduction <a name="intro"/>
 
 These are some collection of working concepts that served me as 
