@@ -1,5 +1,8 @@
 //
-// Created by dalj8690 on 29.04.2020.
+// <author> Damir Ljubic
+// email: damirlj@yahoo.com
+
+// All rights are reserved
 //
 
 #ifndef AIRPLAYSERVICE_THREADWRAPPER_H
