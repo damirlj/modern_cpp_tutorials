@@ -6,7 +6,7 @@
 //
 
 #ifndef THREADWRAPPER_H
-#define ATHREADWRAPPER_H
+#define THREADWRAPPER_H
 
 
 #include <pthread.h>
