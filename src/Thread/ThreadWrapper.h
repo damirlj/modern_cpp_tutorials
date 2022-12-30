@@ -1,8 +1,8 @@
 //
-// <author> Damir Ljubic
-// email: damirlj@yahoo.com
-
-// All rights are reserved
+// Author: Damir Ljubic
+// e-mail: damirlj@yahoo.com
+//
+// All rights reserved!
 //
 
 #ifndef AIRPLAYSERVICE_THREADWRAPPER_H
@@ -19,9 +19,16 @@
 #include <thread>
 #include <string>
 #include <optional>
+#include <cstring>
+#include <functional>
 
 // JNIEnv
-#include <jni.h>
+#if __has_include(<jni.h>)
+    #include <jni.h>
+    #define JNI_INCLUDED 1
+#else
+    #define JNI_INCLUDED 0
+#endif
 
 
 namespace utils
@@ -45,41 +52,42 @@ namespace utils
          */
         static int createThreadWithPrio(pthread_t* handle, thread_f func, void* context, int policy, int priority)
         {
-            int err = 0;
+            using namespace std::string_literals;
 
+            int err = 0;
             pthread_attr_t attr;
             err = pthread_attr_init(&attr);
-            if (err) [[unlikely]] { throw_runtime_with_err("<Thread> Failed: 'pthread_attr_init()': "); }
+            if (err) [[unlikely]] { throw_runtime_with_err("<Thread> Failed: 'pthread_attr_init()': "s); }
 
             // Set the realtime schedule policy
 
             err = pthread_attr_setschedpolicy(&attr, policy);
-            if (err) [[unlikely]] { throw_runtime_with_err("<Thread> Failed: 'pthread_attr_setschedpolicy(): '"); }
+            if (err) [[unlikely]] { throw_runtime_with_err("<Thread> Failed: 'pthread_attr_setschedpolicy(): '"s); }
 
             // Set the priority
 
             struct sched_param param;
             param.sched_priority = priority;
             err = pthread_attr_setschedparam(&attr, &param);
-            if (err) [[unlikely]] { throw_runtime_with_err("<Thread> Failed: 'pthread_attr_setschedparam()': "); }
+            if (err) [[unlikely]] { throw_runtime_with_err("<Thread> Failed: 'pthread_attr_setschedparam()': "s); }
 
             // For this to take into account, the explicit scheduling needs to be specified.
             // Otherwise, the attributes will not be applied - the thread will inherit the process/parent thread
             // scheduling policy.
             // @note This fails, if the user is unprivileged one (without CAP_SYS_NICE capability)
             err = pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
-            if (err) [[unlikely]] { throw_runtime_with_err("<Thread> Failed: 'pthread_attr_setinheritsched()': "); }
+            if (err) [[unlikely]] { throw_runtime_with_err("<Thread> Failed: 'pthread_attr_setinheritsched()': "s); }
 
             // Create thread with a given attribute
             err = pthread_create(handle, &attr, func, context);
-            if (err) [[unlikely]] { throw_runtime_with_err("<Thread> Failed: 'pthread_create()': "); }
+            if (err) [[unlikely]] { throw_runtime_with_err("<Thread> Failed: 'pthread_create()': "s); }
 
             pthread_attr_destroy(&attr);
 
             return err;
         }
     }  // namespace pthread
-
+#if (JNI_INCLUDE == 1)
     namespace jni
     {
         /**
@@ -138,7 +146,7 @@ namespace utils
             return true;
         }
     }  // namespace jni
-
+#endif
 
     /**
      * Wrapper around the std::thread implementation.
@@ -165,7 +173,7 @@ namespace utils
 
         using priority_t = int;
 
-
+#if (JNI_INCLUDED == 1)
         /**
          * For creating the native thread by attaching it
          * to the Java thread, from which context the thread priority - niceness
@@ -181,7 +189,7 @@ namespace utils
          */
         template <typename Func, typename... Args>
         [[maybe_unused]] ThreadWrapper(JavaVM* jvm, priority_t priority, std::string name, Func&& func, Args&&... args);
-
+#endif
         /**
          * For creating realtime thread
          *
@@ -315,7 +323,7 @@ namespace utils
 
     };  // class ThreadWrapper
 
-
+#if (JNI_INCLUDED == 1)
     namespace jni
     {
         class JNIThreadAnchor final
@@ -374,7 +382,7 @@ namespace utils
             },
             std::forward<Args>(args)...)
     {}
-
+#endif
 
     template <typename Func, typename... Args>
     [[maybe_unused]] inline ThreadWrapper::ThreadWrapper(
