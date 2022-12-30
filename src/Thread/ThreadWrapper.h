@@ -5,8 +5,8 @@
 // All rights reserved!
 //
 
-#ifndef AIRPLAYSERVICE_THREADWRAPPER_H
-#define AIRPLAYSERVICE_THREADWRAPPER_H
+#ifndef THREADWRAPPER_H
+#define ATHREADWRAPPER_H
 
 
 #include <pthread.h>
@@ -438,4 +438,4 @@ namespace utils
     }
 }  // namespace utils
 
-#endif  // AIRPLAYSERVICE_THREADWRAPPER_H
+#endif  // THREADWRAPPER_H
