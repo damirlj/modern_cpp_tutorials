@@ -87,7 +87,7 @@ namespace utils
             return err;
         }
     }  // namespace pthread
-#if (JNI_INCLUDE == 1)
+#if (JNI_INCLUDED == 1)
     namespace jni
     {
         /**
