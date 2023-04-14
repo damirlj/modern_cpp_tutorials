@@ -6,11 +6,14 @@
 #ifndef EVENT_H
 #define EVENT_H
 
+
 // std library
 #include <mutex>
 #include <condition_variable>
 #include <chrono>
 #include <functional> // std::invoke
+#include <vector>
+#include <thread>
 
 
 namespace utils
@@ -24,7 +27,9 @@ namespace utils
     class Event final
     {
       public:
+
         using event_wait_t = enum class EEvent : std::uint8_t { timeout = 0, signaled };
+        using waiting_threads_t = std::vector<std::thread::id>;
 
         /**
          * C-tor
@@ -82,7 +87,7 @@ namespace utils
         void setEvent(notify_f notifier)
         {
             {
-                std::scoped_lock lock{m_lock};
+                std::lock_guard lock{m_lock};
                 m_predicate = true;
             }
             std::invoke(notifier, m_event);
@@ -92,10 +97,12 @@ namespace utils
         std::condition_variable m_event;  // not copyable nor movable
         std::mutex m_lock;  // not copyable nor movable
 
-        bool m_autoReset;
+        const bool m_autoReset;
         bool m_predicate = false;
+
+        waiting_threads_t m_waitingThreads;
+
     };
 }  // namespace utils
-
 
 #endif  // EVENT_H

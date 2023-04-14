@@ -5,23 +5,40 @@
 
 #include "Event.h"
 
-using namespace utils;
-
-
 Event::Event(bool autoReset) noexcept
     : m_autoReset(autoReset)
 {}
 
 Event::~Event() = default;
 
+namespace
+{
+    void updateWaitingThreads(Event::waiting_threads_t& waitingThreads)
+    {
+        waitingThreads.erase(
+            std::remove(waitingThreads.begin(), waitingThreads.end(), std::this_thread::get_id()),
+            waitingThreads.end());
+    }
+}  // namespace
+
 Event::event_wait_t Event::wait_for(std::chrono::milliseconds timeout)
 {
     std::unique_lock lock{m_lock};
 
-    const bool signaled = m_event.wait_for(lock, timeout, [this] { return m_predicate; });
-    const auto outcome = signaled ? event_wait_t::signaled : event_wait_t::timeout;
+    event_wait_t outcome = event_wait_t::signaled;
 
-    if (m_autoReset) m_predicate = false;
+    if (!m_predicate)
+    {
+        m_waitingThreads.push_back(std::this_thread::get_id());
+
+        const bool signaled = m_event.wait_for(lock, timeout, [this] { return m_predicate; });
+        outcome = signaled ? event_wait_t::signaled : event_wait_t::timeout;
+
+        updateWaitingThreads(m_waitingThreads);
+
+        // Auto reset
+        if (m_autoReset && m_waitingThreads.empty()) m_predicate = false;
+    }
 
     return outcome;
 }
@@ -30,9 +47,17 @@ void Event::wait()
 {
     std::unique_lock lock{m_lock};
 
-    m_event.wait(lock, [this] { return m_predicate; });
+    if (!m_predicate)
+    {
+        m_waitingThreads.push_back(std::this_thread::get_id());
 
-    if (m_autoReset) m_predicate = false;
+        m_event.wait(lock, [this] { return m_predicate; });
+
+        updateWaitingThreads(m_waitingThreads);
+
+        // Auto reset
+        if (m_autoReset && m_waitingThreads.empty()) m_predicate = false;
+    }
 }
 
 void Event::notify()
@@ -47,6 +72,6 @@ void Event::broadcast()
 
 [[maybe_unused]] void Event::reset()
 {
-    std::scoped_lock lock{m_lock};
+    std::lock_guard lock{m_lock};
     m_predicate = false;
 }
