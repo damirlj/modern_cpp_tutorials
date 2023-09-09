@@ -20,8 +20,8 @@ I’ve also used them to introduce the colleagues, as part of the internal discu
 in realization of the well known topics, like concurrency and new memory model, the power of callable objects and 
 functional programming, generic – template (meta)programming, chrono library, etc.
 
-Please have in mind that using the code in commercial purposes is not allowed.  
-Exposing them to the community is the way for getting the valuable feedback.  
+Please have in mind that using the code in commercial purposes is not permited (MIT licence), but on your own risk.  
+Primary, exposing it to the community is the way for getting the valuable feedback.  
 Thanks in advance.  
     
 >[Contact](damirlj@yahoo.com)
