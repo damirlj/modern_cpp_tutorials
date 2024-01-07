@@ -11,7 +11,7 @@
 #include <atomic>
 
 
-//https://godbolt.org/z/zc1dh8f1z
+//https://godbolt.org/z/xfW7xYTbd
 
 #define FUNC() std::cout << __func__ << '\n'
 
@@ -47,7 +47,9 @@ namespace utils
      template <typename T, typename U = std::remove_cvref_t<T>>
      void exchange(std::atomic<U>& val, const U& expected, T&& newVal, std::memory_order rxOrder, std::memory_order txOrder) 
      {
-        while (const auto rv = val.load(rxOrder) != expected);
+        while (val.load(rxOrder) != expected){
+            std::this_thread::yield();
+        }
         val.store(std::forward<T>(newVal), txOrder);// this can be iterrupted by another thread – when this is important, use CAS idiom
      }
 }
@@ -74,7 +76,9 @@ class [[nodiscard]] AudioDataResult final
                 }
                 std::suspend_never initial_suspend() noexcept { return {}; }
                 std::suspend_always final_suspend() noexcept { return {}; }
+
                 void return_void() {}
+                
                 void unhandled_exception() 
                 {
                     std::rethrow_exception(std::current_exception());
@@ -85,6 +89,7 @@ class [[nodiscard]] AudioDataResult final
                 requires std::convertible_to<std::decay_t<Data>, value_type>
                 std::suspend_always yield_value(Data&& value) 
                 {
+                    FUNC();
                     data_ = std::forward<Data>(value);
                     data_ready_.store(true, std::memory_order_release);
                     return {};
@@ -95,23 +100,29 @@ class [[nodiscard]] AudioDataResult final
                 {
                     explicit AudioDataAwaiter(promise_type& promise) noexcept: promise_(promise) {}
 
-                    bool await_ready() const { return promise_.data_ready_.load(std::memory_order_relaxed);}
+                    bool await_ready() const { return false;} // go directly to await_suspend()
                     
-                    void await_suspend(handle_type)
+                    void await_suspend(handle_type other)
                     {
+                        FUNC();
+                        // better than additionally comment the code – use compile-time named variables
                         static constexpr bool expected = true;
                         static constexpr bool replace_with = false;
-                        
+
                         utils::exchange(promise_.data_ready_, 
                             expected, 
                             replace_with,
                             std::memory_order_acquire, 
                             std::memory_order_relaxed);
+
+                        other.resume(); // resume the caller - consumer, waiting on co_await, by calling await_resume()
                     }
+
                     // Move assignment at client invocation side: const auto data = co_await audioDataResult;
                     // This requires that coroutine's result type provides the co_await unary operator
-                    value_type&& await_resume()
+                    value_type&& await_resume() 
                     {
+                        FUNC();
                         return std::move(promise_.data_);
                     }
 
@@ -122,7 +133,7 @@ class [[nodiscard]] AudioDataResult final
         
             private:
                 value_type data_;
-                std::atomic<bool> data_ready_;
+                std::atomic<bool> data_ready_ = false;
         }; //promise_type interface
 
         
@@ -177,8 +188,7 @@ AudioDataResult consumer(AudioDataResult& audioDataResult)
         FUNC();
         const auto data = co_await audioDataResult;
         if (data.empty()) {std::cout << "No data - exit!\n"; break;}
-        std::cout << "Data received:";
-        details::printContainer(data);
+        std::cout << "Data received:"; details::printContainer(data);
 
         audioDataResult.resume(); // resume producer
     }
