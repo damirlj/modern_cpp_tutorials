@@ -1,18 +1,22 @@
 //
-// Author: Damir Ljubic
-// e-mail: damirlj@yahoo.com
-//
-// All rights reserved!
+// Created by dalj8690 on 29.04.2020.
 //
 
-#ifndef THREADWRAPPER_H
-#define THREADWRAPPER_H
+#ifndef AIRPLAYSERVICE_THREADWRAPPER_H
+#define AIRPLAYSERVICE_THREADWRAPPER_H
 
 
 #include <pthread.h>
 
 #include <sys/time.h>
 #include <sys/resource.h>
+
+// linux
+#ifdef __linux__
+    #include <unistd.h>
+#else
+    #include <strstream>
+#endif
 
 
 // Std library
@@ -54,9 +58,8 @@ namespace utils
         {
             using namespace std::string_literals;
 
-            int err = 0;
             pthread_attr_t attr;
-            err = pthread_attr_init(&attr);
+            int err = pthread_attr_init(&attr);
             if (err) [[unlikely]] { throw_runtime_with_err("<Thread> Failed: 'pthread_attr_init()': "s); }
 
             // Set the realtime schedule policy
@@ -87,6 +90,7 @@ namespace utils
             return err;
         }
     }  // namespace pthread
+
 #if (JNI_INCLUDED == 1)
     namespace jni
     {
@@ -120,16 +124,20 @@ namespace utils
          *
          * @param env       Pointer to the JNI function table
          * @param priority  Priority (niceness) to set
-         * @return Indication of the operation outcome, TRUE on success.
          */
-        static bool setThreadPriority(JNIEnv* env, int priority)
+        static void setThreadPriority(JNIEnv* env, int priority)
         {
             try
             {
+                if (env == nullptr) [[unlikely]]
+                    throw std::runtime_error("<Thread> Invalid env argument");
+
                 jclass cls = env->FindClass("android/os/Process");
-                if (nullptr == cls) throw std::runtime_error("<Thread> Invalid cls name.");
+                if (nullptr == cls) [[unlikely]]
+                    throw std::runtime_error("<Thread> Invalid cls name.");
                 jmethodID id = env->GetStaticMethodID(cls, "setThreadPriority", "(I)V");
-                if (nullptr == id) throw std::runtime_error("<Thread> Invalid method id.");
+                if (nullptr == id) [[unlikely]]
+                    throw std::runtime_error("<Thread> Invalid method id.");
 
                 env->CallStaticVoidMethod(cls, id, static_cast<jint>(priority));
             }
@@ -140,10 +148,7 @@ namespace utils
                     env->ExceptionDescribe();
                     env->ExceptionClear();
                 }
-                return false;
             }
-
-            return true;
         }
     }  // namespace jni
 #endif
@@ -161,16 +166,17 @@ namespace utils
         using handle_t = pthread_t;
         inline static constexpr std::size_t MAX_SIZE_BYTES = 16;  //@note linux limitation!
 
-        using super = std::thread;
-        using super::super;  // use base class c-tors
+        using base = std::thread;
+        using base::base;  // use base class c-tors
 
+        // clang-format off
         using schedule_policy_t = enum class ESchedule : int
-            {
-                  sh_policy_normal = SCHED_OTHER
-                , sh_policy_rr = SCHED_RR
-                , sh_policy_fifo  [[maybe_unused]] = SCHED_FIFO
-            };
-
+        {
+            sh_policy_normal = SCHED_OTHER,
+            sh_policy_rr = SCHED_RR,
+            sh_policy_fifo  [[maybe_unused]] = SCHED_FIFO
+        };
+        // clang-format on
         using priority_t = int;
 
 #if (JNI_INCLUDED == 1)
@@ -188,7 +194,7 @@ namespace utils
          * @note May throw!
          */
         template <typename Func, typename... Args>
-        [[maybe_unused]] ThreadWrapper(JavaVM* jvm, priority_t priority, std::string name, Func&& func, Args&&... args);
+        ThreadWrapper(JavaVM* jvm, priority_t priority, std::string name, Func&& func, Args&&... args);
 #endif
         /**
          * For creating realtime thread
@@ -201,10 +207,11 @@ namespace utils
          * @note May throw!
          */
         template <typename Func, typename... Args>
-        [[maybe_unused]] ThreadWrapper(schedule_policy_t policy, priority_t priority, Func&& func, Args&&... args);
+        ThreadWrapper(schedule_policy_t policy, priority_t priority, std::string name, Func&& func, Args&&... args);
 
-        ThreadWrapper(const super&) = delete;
-        ThreadWrapper& operator=(const super&) = delete;
+
+        ThreadWrapper(const base&) = delete;
+        ThreadWrapper& operator=(const base&) = delete;
 
         /*
          * std::thread supports only move semantic - because by moving the ownership, thread that
@@ -232,21 +239,47 @@ namespace utils
         inline ~ThreadWrapper() { wait(); }
 
         /**
-         * Setting the thread priority, along with the
-         * scheduling policy.
-         * @note This works only for the real-time scheduling policies
+         * Setting the thread priority, along with the scheduling policy.
          *
-         * @param policy    Scheduling policy: works only with real-time (SCHED_RR, SCHED_FIFO)
-         * @param priority  Thread priority
+         * @param policy    Scheduling policy
+         * @param priority  Thread priority (niceness - for CFS)
          * @return Indication of the operation outcome: true on success
          */
         inline bool setPriority(schedule_policy_t policy, priority_t priority)
         {
-            if (schedule_policy_t::sh_policy_normal == policy) return setPriority(priority);
             return 0 == setPriority(native_handle(), std::underlying_type_t<schedule_policy_t>(policy), priority);
         }
 
-        inline bool setPriority(priority_t nice) { return 0 == ::setpriority(PRIO_PROCESS, 0, nice); }
+        [[nodiscard]] inline auto tid()
+        {
+#ifdef __ANDROID__
+            return static_cast<unsigned long>(gettid());
+#elif defined(__POSIX__)
+            return static_cast<unsigned long>(pthread_gettid_np(native_handle()));
+#else
+            std::strstream tid;
+            tid << get_id();
+            return std::stoul(tid.str());
+#endif
+        }
+
+#ifdef __ANDROID__
+        /**
+         * According to Android limitations - we actually can set only niceness [-20, 19] for
+         * CFS scheduling policy
+         * @param nice Niceness to set.
+         * @return Indication of the operation outcome: TRUE on success
+         */
+        inline bool setPriority(priority_t nice)
+        {
+            constexpr auto MIN_NICE = -20;
+            constexpr auto MAX_NICE = 19;
+            if (nice < MIN_NICE || nice > MAX_NICE) return false;
+
+            return 0 == ::setpriority(PRIO_PROCESS, tid(), nice);
+        }
+        [[nodiscard]] inline int getPriority() { return ::getpriority(PRIO_PROCESS, tid()); }
+#endif
 
         inline void wait()
         {
@@ -297,8 +330,7 @@ namespace utils
             CPU_ZERO(&cpuset);
             CPU_SET(core, &cpuset);
 #ifdef __ANDROID__
-            const auto tid = pthread_gettid_np(handle);  // current thread id - std::this_thread::get_id()
-            return sched_setaffinity(tid, sizeof(cpu_set_t), &cpuset);
+            return sched_setaffinity(tid(), sizeof(cpu_set_t), &cpuset);
 #else
             return pthread_setaffinity_np(handle, sizeof(cpu_set_t), &cpuset);
 #endif
@@ -326,17 +358,19 @@ namespace utils
 #if (JNI_INCLUDED == 1)
     namespace jni
     {
-        class JNIThreadAnchor final
+        struct JNIThreadAnchor final
         {
-          public:
+
             explicit JNIThreadAnchor(JavaVM* jvm) noexcept
                 : m_pJavaVM(jvm)
             {
-                if (m_pJavaVM) m_pJavaVM->AttachCurrentThread(&m_pEnv, nullptr);
+                if (m_pJavaVM) [[likely]]
+                    m_pJavaVM->AttachCurrentThread(&m_pEnv, nullptr);
             }
-            ~JNIThreadAnchor()
+            inline ~JNIThreadAnchor()
             {
-                if (m_pJavaVM && m_pEnv) m_pJavaVM->DetachCurrentThread();
+                if (m_pJavaVM && m_pEnv) [[likely]]
+                    m_pJavaVM->DetachCurrentThread();
             }
 
             // Ownership over JNIEnv* for attached thread is not sharable, nor movable
@@ -349,8 +383,8 @@ namespace utils
              * Boolean operator
              * @return Indicator whether the native thread is successfully attached.
              */
-            explicit operator bool() const { return nullptr != m_pEnv; }
-            JNIEnv* get() const { return m_pEnv; }
+            inline explicit operator bool() const { return nullptr != m_pEnv; }
+            inline JNIEnv* get() const { return m_pEnv; }
 
           private:
             JavaVM* m_pJavaVM;
@@ -359,24 +393,20 @@ namespace utils
     }  // namespace jni
 
     template <typename Func, typename... Args>
-    [[maybe_unused]] inline ThreadWrapper::ThreadWrapper(
-        JavaVM* jvm,
-        priority_t priority,
-        std::string name,
-        Func&& func,
-        Args&&... args)
+    inline ThreadWrapper::ThreadWrapper(JavaVM* jvm, priority_t priority, std::string name, Func&& func, Args&&... args)
         : std::thread(
-            [=, func_ = std::forward<Func>(func), name_ = std::move(name)](Args&&... args)
+            [=, func_ = std::forward<Func>(func)](Args&&... args)
             {
                 jni::JNIThreadAnchor threadAnchor{jvm};
-                if (!threadAnchor) throw std::runtime_error("<Thread> Failed to attach native thread!");
+                if (not threadAnchor) [[unlikely]]
+                    throw std::runtime_error("<Thread> Failed to attach native thread!");
 
                 // Set priority (niceness): at Java side, otherwise EPERM will be returned
-                if (!jni::setThreadPriority(threadAnchor.get(), priority))
-                    throw std::runtime_error("<Thread> Failed to call: 'jni::setThreadPriority()'");
+                jni::setThreadPriority(threadAnchor.get(), priority);
 
                 // Set name: at native side
-                std::ignore = setName(name_);
+                std::ignore = setName(name);
+
                 // Native thread function
                 std::invoke(func_, std::forward<Args>(args)...);
             },
@@ -385,29 +415,43 @@ namespace utils
 #endif
 
     template <typename Func, typename... Args>
-    [[maybe_unused]] inline ThreadWrapper::ThreadWrapper(
+    inline ThreadWrapper::ThreadWrapper(
         utils::ThreadWrapper::schedule_policy_t policy,
         utils::ThreadWrapper::priority_t priority,
+        std::string name,
         Func&& func,
         Args&&... args)
-        : std::thread()
-    {
-        auto threadFunc = std::bind(func, std::forward<Args>(args)..., std::placeholders::_1);
-        // This may throw!
-        std::ignore = pthread::createThreadWithPrio(
-            native_handle(),
-            threadFunc,
-            nullptr,
-            std::underlying_type_t<schedule_policy_t>(policy),
-            priority);
-    }
+        : std::thread(
+            [=, func_ = std::forward<Func>(func)](Args&&... args)
+            {
+                // Set priority
+#if __ANDROID__
+                if (policy == utils::ThreadWrapper::schedule_policy_t::sh_policy_normal) [[likely]]
+                {
+                    std::ignore = setPriority(priority);
+                }
+                else
+#endif
+                {
+                    std::ignore = setPriority(policy, priority);
+                }
+
+                // Set name
+                std::ignore = setName(name);
+
+                // Native thread function
+                std::invoke(func_, std::forward<Args>(args)...);
+            },
+            std::forward<Args>(args)...)
+    {}
+
 
     /**
      * Helper type.
      * Custom thread deleter, in case that thread needs to be joined/detach.
      *
-     * @note Only for the backward compatibility, since ~ThreadWrapper is refactored
-     * to resolve this issue!
+     * @note Only for the backward compatibility, since <br>
+     * ~ThreadWrapper is refactored to resolve this issue!
      */
     struct [[maybe_unused]] ThreadDeleter
     {
@@ -438,4 +482,4 @@ namespace utils
     }
 }  // namespace utils
 
-#endif  // THREADWRAPPER_H
+#endif  // AIRPLAYSERVICE_THREADWRAPPER_H
