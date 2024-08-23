@@ -36,6 +36,7 @@ class TestBuilderPattern {
         }))
     }
 
+    data class User2 (val id: Int, val name: String, var email : String? = null)
     @Test
     fun testBuilderPatternWithApplyOnly() {
         var car = CarConfiguration2(123, "Audi", Engine.DIESEL)
@@ -45,5 +46,13 @@ class TestBuilderPattern {
             adas = ADAS.Copilot
         }
         println(car)
+
+        var user = User2(1, "Alex")
+        println(user)
+
+        user = user.apply{
+            email = "alexlj@yahoo.com"
+        }
+        println(user)
     }
 }

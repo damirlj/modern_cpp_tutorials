@@ -10,7 +10,7 @@ class A private constructor(
             private var id: Int? = null
             private var name: String? = null
 
-            // For aggregate updates - initialize with the current one
+            // For aggregated updates - initialize with the current one (copy-constructor)
             constructor (a: A) : this() {
                 id = a.id
                 name = a.name
@@ -38,6 +38,7 @@ class A private constructor(
             fun build() = A(id, name)
         }
 
+        // Helper method for parsing the dynamic updates as partial one (deltas)
         fun update(curr: A, new: A) = Builder(curr).update(new).build()
     }
 

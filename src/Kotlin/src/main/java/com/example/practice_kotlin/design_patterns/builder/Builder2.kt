@@ -26,7 +26,7 @@ class CarConfiguration private constructor(
             var smartphone: Smartphone? = null
             var adas: ADAS? = null
 
-            // For aggregate updates - initialize the builder with previous configuration
+            // For aggregated updates - initialize the builder with previous configuration
             constructor (car: CarConfiguration) : this(car.id, car.brand, car.engine) {
                 camera = car.camera
                 smartphone = car.smartphone
@@ -35,7 +35,7 @@ class CarConfiguration private constructor(
 
             fun build() = CarConfiguration(id, brand, engine, camera, smartphone, adas)
 
-            // For aggregate updates - the new (partial) configuration that will be applied on top of the current configuration
+            // For aggregated updates - the new (partial) configuration that will be applied on top of the current configuration
             fun update(car: CarConfiguration) = apply {
                 id = car.id
                 brand = car.brand
@@ -48,16 +48,16 @@ class CarConfiguration private constructor(
         }
 
         /**
-         * Builders
+         * Helper methods, for building the outer class instance on the fly
          *
-         * @param block This is lambda that extends Builder on fly - Builder is receiver,
-         * which means the callable can access any non-private (public) properties of the data class
-         * Builder (all of them), in order to proper configure the outer class
+         * @param block This is lambda that extends Builder (placeholder for anonymous Extension Function) on the fly - Builder is receiver,
+         * which means the callable can access any non-private (public) properties of the
+         * receiver (all of them) through "this", in order to properly configure the outer class
          */
         inline fun build(id: Int, brand: String, engine: Engine, block: Builder.() -> Unit) =
             Builder(id, brand, engine).apply(block).build()
 
-        // For aggregate updates
+        // For aggregated updates
         inline fun build(currConfig: CarConfiguration, block: Builder.() -> Unit) =
             Builder(currConfig).apply(block).build()
 
