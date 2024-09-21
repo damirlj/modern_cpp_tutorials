@@ -1,6 +1,6 @@
 /*
  * AOThread.h
- *
+ * C++17 based solution
  *  Created on: Aug 22, 2021
  *      Author: <a href="mailto:damirlj@yahoo.com">Damir Ljubic</a>
  */
@@ -53,7 +53,6 @@ namespace utils::aot
      * Type Erasure
      * For wrapping the only copy-constructible callable objects
      * into movable object, since std::packaged_task is move-only
-     * The solution is taken from "Concurrency in action" Anthony Williams
      */
     class FunctionWrapper final
     {
@@ -89,11 +88,14 @@ namespace utils::aot
             FunctionWrapper() = default;
             ~FunctionWrapper() = default;
 
-            FunctionWrapper(FunctionWrapper&& other) : m_pFunctionWrapper(std::move(other.m_pFunctionWrapper))
+            FunctionWrapper(FunctionWrapper&& other) noexcept : m_pFunctionWrapper(std::exchange(other.m_pFunctionWrapper, nullptr))
             {}
-            FunctionWrapper& operator=(FunctionWrapper&& other)
+            FunctionWrapper& operator=(FunctionWrapper&& other) noexcept
             {
-                m_pFunctionWrapper = std::move(other.m_pFunctionWrapper);
+                using namespace std;
+                FunctionWrapper tmp {std::move(other)};
+                swap(*this, tmp);
+                
                 return *this;
             }
 
@@ -169,8 +171,8 @@ namespace utils::aot
                 using task_t = packaged_task<result_t()>;
 
 
-                task_t task { bind(std::forward<Func>(func), std::forward<Args>(args)...)};//implicit conversion to FunctionWrapper
-                auto f =  task.get_future();
+                task_t task { bind(std::forward<Func>(func), std::forward<Args>(args)...)}; // implicit conversion to FunctionWrapper
+                auto result =  task.get_future();
 
                 {
                     lock_guard<mutex> lock {m_lock};
@@ -179,7 +181,7 @@ namespace utils::aot
 
                 m_condition.notify_one();
 
-                return f;
+                return result;
 
             }
 
