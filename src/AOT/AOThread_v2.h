@@ -82,14 +82,16 @@ namespace utils::aot
         public:
             template <typename Func>
             FunctionWrapper(Func&& func):
-                m_pFunctionWrapper(std::make_unique<FunctionWrapperBaseImpl<Func>>(std::move(func)))
+                m_pFunctionWrapper(std::make_unique<FunctionWrapperBaseImpl<Func>>(std::forward(func)))
             {}
 
             FunctionWrapper() = default;
             ~FunctionWrapper() = default;
 
+            // Move operations
             FunctionWrapper(FunctionWrapper&& other) noexcept : m_pFunctionWrapper(std::exchange(other.m_pFunctionWrapper, nullptr))
             {}
+
             FunctionWrapper& operator=(FunctionWrapper&& other) noexcept
             {
                 using namespace std;
