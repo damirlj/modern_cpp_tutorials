@@ -152,7 +152,7 @@ namespace utils::aot
                 using task_t = packaged_task<result_t()>;
 
                 task_t task {FunctionWrapper(move(func))};
-                auto f = task.get_future();
+                auto result = task.get_future();
 
                 {
                     lock_guard<std::mutex> lock {m_lock};
@@ -161,7 +161,7 @@ namespace utils::aot
 
                 m_condition.notify_one();
 
-                return f;
+                return result;
             }
 
             template <typename Func, typename...Args>
