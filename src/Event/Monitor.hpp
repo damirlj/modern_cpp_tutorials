@@ -38,7 +38,7 @@ class Monitor final
             // Mutex interface
             void lock() { monitor_.lock_.lock();}
             void unlock() {
-                if constexpr (broadcast) monitor_.condition_.notify_one();
+                if constexpr (not broadcast) monitor_.condition_.notify_one();
                 else monitor_.condition_.notify_all();
                 monitor_.lock_.unlock();}
             private:
