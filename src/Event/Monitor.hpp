@@ -45,8 +45,8 @@ class Monitor final
                 const Monitor& monitor_;
 
         };
-        auto lock = UnLockWithNotify{*this};
-        return std::unique_lock<UnLockWithNotify>{lock};
+        
+        return UnLockWithNotify{*this};
     }
 
     template <typename Predicate, typename... Args>
@@ -104,13 +104,15 @@ class Monitor final
       template <bool broadcast, typename Func, typename...Args>
       auto notify(Func&& func, Args&&...args) const
       {
-        auto lock = getLockAndNotifyWhenDone<broadcast>();
-
+        auto lockWithNotify = getLockAndNotifyWhenDone<broadcast>();
+        std::unique_lock lock {lockWithNotify};
+        
         if constexpr (not std::is_void_v<std::invoke_result_t<Func, Args...>>)
         {
             return std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
 
         }
+        
         std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
       }
 
