@@ -52,7 +52,7 @@ class Monitor final
     */
     template <typename Predicate, typename... Args>
     requires std::is_same_v<bool, std::invoke_result_t<Predicate, Args...>>
-    auto wait(
+    [[nodiscard]] auto wait(
         Predicate&& predicate,
         Args&&... args) const
     {
@@ -70,12 +70,13 @@ class Monitor final
 
     /**
      *
-     * Wait on the predicate to be signaled, or timeout being expired: whatever comes first
-     * and return the locking object to the client
+     * Wait on the predicate to be signaled, or timeout being expired: whatever comes first,
+     * and return the tuple containing the result of the wait operation and
+     * the locking object
     */
     template <typename Predicate, typename... Args>
     requires std::is_same_v<bool, std::invoke_result_t<Predicate, Args...>>
-    std::tuple<bool, std::unique_lock<lock_t>>
+    [[nodiscard]] std::tuple<bool, std::unique_lock<lock_t>>
     wait_for(std::chrono::milliseconds timeout,
         Predicate&& predicate,
         Args&&... args) const
@@ -109,7 +110,8 @@ class Monitor final
 
       /**
        * Execute the given function (callable) under the locking 
-       * protection, and notify completion
+       * protection, and notify completion.
+       * Returns the result of the function call - if any
       */
       template <bool broadcast, typename Func, typename...Args>
       auto notify(Func&& func, Args&&...args) const
