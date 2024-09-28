@@ -6,12 +6,9 @@
 
 
 /**
-* @author Damir Ljubic: damirlj@yahoo.com
-* all rights reserved!
-*
 * @brief Implementation of the Monitor Object design pattern.
-* This will be used to monitor any client method that requires inter-thread
-* synchronization - by accessing/modifying the shared data resources within
+* This will be used to monitor any client's method that requires inter-thread
+* synchronization - by accessing/modifying the client's internal state from
 * the different thread contexts.
 */
 template <typename Lock = std::mutex, typename Condition = std::condition_variable>
@@ -49,6 +46,10 @@ class Monitor final
         return UnLockWithNotify{*this};
     }
 
+    /**
+     * Wait infinite on the predicate to be signaled, and return the locking 
+     * object to the client
+    */
     template <typename Predicate, typename... Args>
     requires std::is_same_v<bool, std::invoke_result_t<Predicate, Args...>>
     auto wait(
@@ -67,6 +68,11 @@ class Monitor final
         return lock;
     }
 
+    /**
+     *
+     * Wait on the predicate to be signaled, or timeout being expired: whatever comes first
+     * and return the locking object to the client
+    */
     template <typename Predicate, typename... Args>
     requires std::is_same_v<bool, std::invoke_result_t<Predicate, Args...>>
     std::tuple<bool, std::unique_lock<lock_t>>
@@ -101,6 +107,10 @@ class Monitor final
 
   private:
 
+      /**
+       * Execute the given function (callable) under the locking 
+       * protection, and notify completion
+      */
       template <bool broadcast, typename Func, typename...Args>
       auto notify(Func&& func, Args&&...args) const
       {
