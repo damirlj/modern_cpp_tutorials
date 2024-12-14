@@ -1,9 +1,12 @@
-package <your package>
+//
+// <author> damirlj@yahoo.com
+// Copyright (c) 2024. All rights reserved!
+//
+package <your package>;
 
 import androidx.annotation.NonNull;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -12,7 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public final class Event {
   private final Lock mLock; // mutex
   private final Condition mCondition; // condition variable
-  private final AtomicBoolean mEventSignaled = new AtomicBoolean(false); // predicate to prevent spurious wake-ups
+  private boolean mEventSignaled = false; // predicate to prevent spurious wake-ups
 
   public Event() {
     mLock = new ReentrantLock();
@@ -21,17 +24,15 @@ public final class Event {
 
   @FunctionalInterface
   private interface ILockCallback {
-    void apply() throws Exception;
+    void apply() throws Exception; // signature relevant: methods of condition variable may throw
   }
 
   private void lockAndThen(@NonNull ILockCallback callback) {
     mLock.lock();
     try {
-      callback.apply(); // Call without handling exceptions
-    } catch (RuntimeException e) {
-      throw e; // Propagate runtime exceptions
+      callback.apply(); // Call condition variable related methods, without handling exceptions
     } catch (Exception e) {
-      throw new RuntimeException(e); // Wrap checked exceptions in a RuntimeException
+        e.printStackTrace(); // You can add your own logging mechanism
     } finally {
       mLock.unlock();
     }
@@ -44,7 +45,7 @@ public final class Event {
   public void signal() {
     ILockCallback callback =
         () -> {
-          mEventSignaled.set(true);
+          mEventSignaled = true;
           mCondition.signal();
         };
 
@@ -55,7 +56,7 @@ public final class Event {
   public void signalAll() {
     ILockCallback callback =
         () -> {
-          mEventSignaled.set(true);
+          mEventSignaled = true;
           mCondition.signalAll();
         };
 
@@ -71,10 +72,10 @@ public final class Event {
 
     ILockCallback callback =
         () -> {
-          while (!mEventSignaled.get()) {
+          while (!mEventSignaled) {
             mCondition.await();
           }
-          if (autoReset) mEventSignaled.set(false);
+          if (autoReset) mEventSignaled = false;
         };
 
     lockAndThen(callback);
@@ -93,10 +94,10 @@ public final class Event {
     final boolean[] signaled = new boolean[1];
     ILockCallback callback =
         () -> {
-          while (!mEventSignaled.get()) {
+          while (!mEventSignaled) {
             signaled[0] = mCondition.await(time, timeUnit);
           }
-          if (autoReset) mEventSignaled.set(false); // don't care if it's already false:timeout expired
+          if (autoReset) mEventSignaled = false; // don't care if it's already false:timeout expired
         };
 
     lockAndThen(callback);
@@ -116,10 +117,10 @@ public final class Event {
     final boolean[] signaled = new boolean[1];
     ILockCallback callback =
         () -> {
-          while (!mEventSignaled.get()) {
+          while (!mEventSignaled) {
             signaled[0] = mCondition.awaitUntil(deadline);
           }
-          if (autoReset) mEventSignaled.set(false); // don't care if it's already false
+          if (autoReset) mEventSignaled = false; // don't care if it's already false
         };
 
     lockAndThen(callback);
