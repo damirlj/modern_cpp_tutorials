@@ -1,25 +1,45 @@
-//
-// <author> damirlj@yahoo.com
-// Copyright (c) 2024. All rights reserved!
-//
 package <your package>;
 
 import androidx.annotation.NonNull;
+
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /** Helper class for event synchronization */
-public final class Event {
+public class Event {
   private final Lock mLock; // mutex
   private final Condition mCondition; // condition variable
-  private boolean mEventSignaled = false; // predicate to prevent spurious wake-ups
+  private boolean mEventSignaled = false; // predicate to prevent spurious wake ups
 
-  public Event() {
+  private static final class ThreadList {
+    private final List<Long> threads = new ArrayList<>();
+
+    public void add() {
+      threads.add(Thread.currentThread().getId());
+    }
+
+    public void remove() {
+      threads.remove(Thread.currentThread().getId());
+    }
+
+    public boolean empty() {
+      return threads.isEmpty();
+    }
+  }
+
+  private final ThreadList threads = new ThreadList();
+  private boolean autoReset;
+
+  public Event(boolean autoReset) {
     mLock = new ReentrantLock();
     mCondition = mLock.newCondition();
+    this.autoReset = autoReset;
   }
 
   @FunctionalInterface
@@ -32,7 +52,7 @@ public final class Event {
     try {
       callback.apply(); // Call condition variable related methods, without handling exceptions
     } catch (Exception e) {
-        e.printStackTrace(); // You can add your own logging mechanism
+      e.printStackTrace();
     } finally {
       mLock.unlock();
     }
@@ -46,7 +66,7 @@ public final class Event {
     ILockCallback callback =
         () -> {
           mEventSignaled = true;
-          mCondition.signal();
+          if (!threads.empty()) mCondition.signal();
         };
 
     lockAndThen(callback);
@@ -57,51 +77,55 @@ public final class Event {
     ILockCallback callback =
         () -> {
           mEventSignaled = true;
-          mCondition.signalAll();
+          if (!threads.empty()) mCondition.signalAll();
         };
 
     lockAndThen(callback);
   }
 
+  private boolean waitOnCondition(Callable<Boolean> waitStrategy) throws Exception {
+    threads.add();
+    try {
+      while (!mEventSignaled) {
+        if (!waitStrategy.call()) {
+          return false; // Timeout or deadline reached
+        }
+      }
+      return true;
+    } finally {
+      threads.remove();
+      if (autoReset && threads.empty()) {
+        mEventSignaled = false;
+      }
+    }
+  }
+
   /**
    * Wait on event signalization, or until thread which waits on event notification is interrupted
-   *
-   * @param autoReset Reset event after being signaled - for the subsequent wait call
    */
-  public void waitEvent(boolean autoReset) {
+  public void waitEvent() {
 
-    ILockCallback callback =
-        () -> {
-          while (!mEventSignaled) {
-            mCondition.await();
-          }
-          if (autoReset) mEventSignaled = false;
-        };
-
-    lockAndThen(callback);
+    lockAndThen(
+        () ->
+            waitOnCondition(
+                () -> {
+                  mCondition.await();
+                  return true;
+                }));
   }
 
   /**
    * Wait on event being signaled, waiting thread interrupted, or timeout is expired
    *
    * @param time The relative time interval to be waited for
-   * @param timeUnit Unit of time to wait for (nanoseconds, microseconds, milliseconds, etc.)
-   * @param autoReset Reset event after being signaled - for the subsequent wait call
+   * @param unit Unit of time to wait for (nanoseconds, microseconds, milliseconds, etc.)
    * @return Indication of the wait outcome: false - timeout expired before event is notified.
    *     Otherwise - true
    */
-  public boolean waitEventFor(final long time, final TimeUnit timeUnit, boolean autoReset) {
-    final boolean[] signaled = new boolean[1];
-    ILockCallback callback =
-        () -> {
-          while (!mEventSignaled) {
-            signaled[0] = mCondition.await(time, timeUnit);
-          }
-          if (autoReset) mEventSignaled = false; // don't care if it's already false:timeout expired
-        };
+  public boolean waitEventFor(final long time, final TimeUnit unit) {
 
-    lockAndThen(callback);
-
+    final boolean[] signaled = {false};
+    lockAndThen(() -> signaled[0] = waitOnCondition(() -> mCondition.await(time, unit)));
     return signaled[0];
   }
 
@@ -109,22 +133,12 @@ public final class Event {
    * Wait on the event being signaled, waiting thread interrupted, or the deadline reached
    *
    * @param deadline The absolute time to be waited on
-   * @param autoReset Reset event after being signaled - for the subsequent wait call
    * @return Indication of the wait outcome: false - timeout expired before event is notified.
    *     Otherwise - true
    */
-  public boolean waitEventUntil(final Date deadline, boolean autoReset) {
-    final boolean[] signaled = new boolean[1];
-    ILockCallback callback =
-        () -> {
-          while (!mEventSignaled) {
-            signaled[0] = mCondition.awaitUntil(deadline);
-          }
-          if (autoReset) mEventSignaled = false; // don't care if it's already false
-        };
-
-    lockAndThen(callback);
-
+  public boolean waitEventUntil(final Date deadline) {
+    final boolean[] signaled = {false};
+    lockAndThen(() -> signaled[0] = waitOnCondition(() -> mCondition.awaitUntil(deadline)));
     return signaled[0];
   }
 }
