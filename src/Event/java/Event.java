@@ -15,7 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Event {
   private final Lock mLock; // mutex
   private final Condition mCondition; // condition variable
-  private boolean mEventSignaled = false; // predicate to prevent spurious wake ups
+  private volatile boolean mEventSignaled = false; // predicate to prevent spurious wake ups
 
   private static final class ThreadList {
     private final List<Long> threads = new ArrayList<>();
@@ -33,12 +33,13 @@ public class Event {
     }
   }
 
-  private final ThreadList threads = new ThreadList();
-  private boolean autoReset;
+  private final ThreadList waitingThreads = new ThreadList();
+  private final boolean autoReset;
 
   public Event(boolean autoReset) {
     mLock = new ReentrantLock();
     mCondition = mLock.newCondition();
+
     this.autoReset = autoReset;
   }
 
@@ -66,7 +67,7 @@ public class Event {
     ILockCallback callback =
         () -> {
           mEventSignaled = true;
-          if (!threads.empty()) mCondition.signal();
+          if (!waitingThreads.empty()) mCondition.signal();
         };
 
     lockAndThen(callback);
@@ -77,14 +78,14 @@ public class Event {
     ILockCallback callback =
         () -> {
           mEventSignaled = true;
-          if (!threads.empty()) mCondition.signalAll();
+          if (!waitingThreads.empty()) mCondition.signalAll();
         };
 
     lockAndThen(callback);
   }
 
   private boolean waitOnCondition(Callable<Boolean> waitStrategy) throws Exception {
-    threads.add();
+    waitingThreads.add();
     try {
       while (!mEventSignaled) {
         if (!waitStrategy.call()) {
@@ -93,8 +94,8 @@ public class Event {
       }
       return true;
     } finally {
-      threads.remove();
-      if (autoReset && threads.empty()) {
+      waitingThreads.remove();
+      if (autoReset && waitingThreads.empty()) {
         mEventSignaled = false;
       }
     }
@@ -124,7 +125,7 @@ public class Event {
    */
   public boolean waitEventFor(final long time, final TimeUnit unit) {
 
-    final boolean[] signaled = {false};
+    boolean[] signaled = {false};
     lockAndThen(() -> signaled[0] = waitOnCondition(() -> mCondition.await(time, unit)));
     return signaled[0];
   }
@@ -137,7 +138,7 @@ public class Event {
    *     Otherwise - true
    */
   public boolean waitEventUntil(final Date deadline) {
-    final boolean[] signaled = {false};
+    boolean[] signaled = {false};
     lockAndThen(() -> signaled[0] = waitOnCondition(() -> mCondition.awaitUntil(deadline)));
     return signaled[0];
   }
