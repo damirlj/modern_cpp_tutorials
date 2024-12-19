@@ -37,7 +37,7 @@ public class TestEvent {
       long elapsed = (System.nanoTime() - start) / 1_000_000;
       System.out.printf(
           Locale.ENGLISH,
-          "<Event> (%s) received after: %d[ms]%n",
+          "<Event> (%s) received after: %d[ms]",
           Thread.currentThread().getName(),
           elapsed);
       assertTrue(elapsed >= signaledAfterMs);
@@ -79,17 +79,17 @@ public class TestEvent {
     }
   }
 
-  private Thread waitForTask(@NotNull Event event, long timeout) {
+  private Thread waitForTask(@NotNull Event event, final long timeout) {
     return new Thread(
         () -> {
           long start = System.nanoTime();
           boolean signaled = event.waitEventFor(timeout, TimeUnit.MILLISECONDS);
           long elapsed = (System.nanoTime() - start) / 1_000_000;
           if (signaled) {
-            System.out.printf(Locale.ENGLISH, "<Event> received after: %d[ms]%n", elapsed);
+            System.out.printf(Locale.ENGLISH, "<Event> received after: %d[ms]", elapsed);
             assertTrue(elapsed < timeout);
           } else {
-            System.out.printf(Locale.ENGLISH, "<Event> timeout expired: %d[ms]%n", elapsed);
+            System.out.printf(Locale.ENGLISH, "<Event> timeout expired: %d[ms]", elapsed);
             assertTrue(elapsed >= timeout);
           }
         });
