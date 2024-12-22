@@ -105,7 +105,6 @@ public class Event {
    * Wait on event signalization, or until thread which waits on event notification is interrupted
    */
   public void waitEvent() {
-
     lockAndThen(
         () ->
             waitOnCondition(
@@ -124,8 +123,7 @@ public class Event {
    *     Otherwise - true
    */
   public boolean waitEventFor(final long time, final TimeUnit unit) {
-
-    boolean[] signaled = {false};
+    final boolean[] signaled = {false};
     lockAndThen(() -> signaled[0] = waitOnCondition(() -> mCondition.await(time, unit)));
     return signaled[0];
   }
@@ -138,7 +136,7 @@ public class Event {
    *     Otherwise - true
    */
   public boolean waitEventUntil(final Date deadline) {
-    boolean[] signaled = {false};
+    final boolean[] signaled = {false};
     lockAndThen(() -> signaled[0] = waitOnCondition(() -> mCondition.awaitUntil(deadline)));
     return signaled[0];
   }
