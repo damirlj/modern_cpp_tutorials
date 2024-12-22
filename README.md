@@ -22,6 +22,7 @@ functional programming, generic – template (meta)programming, chrono library, 
 
 Please have in mind that using the code in commercial purposes is not permited (MIT licence), but on your own risk.  
 Primary, exposing it to the community is the way for getting the valuable feedback.  
+
 Thanks in advance.  
     
 >[Contact](damirlj@yahoo.com)
@@ -29,20 +30,33 @@ Thanks in advance.
 
 ## Tutorial 1 <a name="tut1"/>
 
-<b>AOT – Active Object Thread</b> design pattern is introduced, as way to have asynchronous inter-thread communication, 
-delegating the tasks to the background thread, enqueuing them into the tasks queue.
-The thread drains the queue and provides the execution context, a separate one from the thread(s) from which 
-the tasks are sent, in which they will be executed sequentially, in order of arrival (FIFO).
-The caller thread can be also synchronized on result of task being executed, waiting on signaling the execution completion 
-through the communication channel (future).
+<b>AOT – Active Object Thread</b> concurrency design pattern is introduced, as way to decouple the tasks (callables) from the 
+execution context.  
+The mechanics consist of delegating the tasks to the background thread, enqueuing them into the jobs queue.  
+The thread drains the queue and provides the execution context, a separate one from the thread(s) from which   
+the tasks are sent (senders), in which they will be executed <i>sequentially</i>, in order of arrival (FIFO).  
+The caller threads can be also synchronized on result of task being executed, waiting on signaling the execution completion  
+through the communication channel (std::future).  
 
-This concept is heavily used for asynchronous message-based inter-thread communication, especially for time consuming – blocking tasks that are delegated to the background thread in asynchronous way, where order of execution is preserved (first came, first served).    
-Typically, you would use this approach for
+This concept is heavily used for <b>asynchronous message-based communication</b>, binding the callable with the data,  
+ensuring the uniform - parameterless signature of the messages (jobs) that will be stored into homogeneous queue,  
+for further processing: preserving the order of execution (first come, first served).
+
+Typically, we would use this approach for
 
 * <i>Producer-consumer</i> scenarios (audio, video streaming, etc.)
 * [Actor model](https://en.wikipedia.org/wiki/Actor_model)
     * example: [Arataga](https://github.com/Stiffstream/arataga)
+* JNI: for calling the Java callbacks from the native domain.
 
+  This is to ensure the same thread context will be attached to the JVM thread, for  
+  hosting the different Java callbacks invokations from the native space, since frequent attaching-detaching  
+  the native to JVM thread is expensive
+
+Some frameworks/languages have already embedded implementation of this concept.  
+In Android, there is a <i>HandlerThread</i>, with <i>Looper</i> (MessageQueue) and <i>Handler</i> - custom message handling, that embodies the AOT.
+
+[Possible C++ implementation](/src/AOT)
 
 ## Tutorial 2 <a name="tut2"/>
 <b>Type traits</b> are small objects for inspecting the type (rather than value) at compile time.
@@ -60,7 +74,7 @@ In pre C++17 times, this requirement couldn’t be done as elegant as with compi
 ```c++
 // Tag dispatching in action for C++14 compiler
 
-using string_tag_v = enum class StringTagValues : uint8_t
+using string_tag_v = enum class StringTagValues : std::uint8_t
 {
    tag_string,
    tag_numeric,
