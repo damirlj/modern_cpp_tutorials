@@ -52,7 +52,6 @@ Typically, we would use this approach for
   The actors can be implemented as AOT, with difference that the working queue is not bounded to  
   a particular thread, but it will be hosted on-demand, from some preallocated thread in a pool, using Scheduler.  
   The actors play microservices in distributed, well scalled architectures.  
-  The library with C++ actor implementation: [Arataga](https://github.com/Stiffstream/arataga)
 * For <b>event-driven architectures</b>  
   One example would be asynchronous native updates over JNI, which involves calling the Java  
   callbacks as the way to propagate these messages.  
