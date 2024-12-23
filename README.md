@@ -44,17 +44,27 @@ for further processing: preserving the order of execution (first come, first ser
 
 Typically, we would use this approach for
 
-* <i>Producer-consumer</i> scenarios (audio, video streaming, etc.)
+* <i>Producer-consumer</i> scenarios (audio, video streaming, etc.)  
+  AOT can be used to compensate the difference in producer-consumer rate, in a non-blocking way
 * [Actor model](https://en.wikipedia.org/wiki/Actor_model)
-    * example: [Arataga](https://github.com/Stiffstream/arataga)
-* JNI: for calling the Java callbacks from the native domain.
+  Having a network of actors - stateful entities that send/receive messages to each others, doing a  
+  particular job in parallel.
+  The actors can be implemented as AOT, with difference that the working queue is not bounded to  
+  a particular thread, but it will be hosted on-demand, from some preallocated thread in a pool, using Scheduler.  
+  The actors play microservices in distributed, well scalled architectures.  
+  The library with C++ actor implementation: [Arataga](https://github.com/Stiffstream/arataga)
+* For <b>event-driven architectures</b>  
+  One example would be asynchronous native updates over JNI, which involves calling the Java  
+  callbacks as the way to propagate these messages.  
+  This is to ensure that the same native thread will be attached to the JVM thread, for    
+  hosting the different Java callbacks invokations (updates) from the native space,  
+  since frequent attaching-detaching the native to JVM thread is expensive
 
-  This is to ensure the same thread context will be attached to the JVM thread, for  
-  hosting the different Java callbacks invokations from the native space, since frequent attaching-detaching  
-  the native to JVM thread is expensive
-
-Some frameworks/languages have already embedded implementation of this concept.  
-In Android, there is a <i>HandlerThread</i>, with <i>Looper</i> (MessageQueue) and <i>Handler</i> - custom message handling, that embodies the AOT.
+Some frameworks/libraries have already embedded implementation of this concept.  
+In Android, there is a
+- <i>HandlerThread</i>: a thread context, with
+- <i>Looper</i>: that enqueues the messages into MessageQueue and dispatch them to
+- <i>Handler</i>: the one with overriden - custom message handling
 
 [Possible C++ implementation](/src/AOT)
 
