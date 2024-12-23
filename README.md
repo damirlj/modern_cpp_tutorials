@@ -30,8 +30,8 @@ Thanks in advance.
 
 ## Tutorial 1 <a name="tut1"/>
 
-<b>AOT – Active Object Thread</b> concurrency design pattern is introduced, as way to decouple the tasks (callables) from the 
-execution context.  
+<b>AOT – Active Object Thread</b> concurrency design pattern is introduced, as way to decouple the tasks (callables)  
+from the execution context.  
 The mechanics consist of delegating the tasks to the background thread, enqueuing them into the jobs queue.  
 The thread drains the queue and provides the execution context, a separate one from the thread(s) from which   
 the tasks are sent (senders), in which they will be executed <i>sequentially</i>, in order of arrival (FIFO).  
