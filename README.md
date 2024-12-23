@@ -64,7 +64,7 @@ Some frameworks/libraries have already embedded implementation of this concept.
 In Android, there is a
 - <i>HandlerThread</i>: a thread as execution context, with
 - <i>Looper</i>: that enqueues the messages into MessageQueue and dispatch them to
-- <i>Handler</i>: the one with overriden - custom message handling
+- <i>Handler</i>: the one with overriden - custom specific message handling
 
 [Possible C++ implementation](/src/AOT)
 
