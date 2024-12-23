@@ -35,8 +35,8 @@ execution context.
 The mechanics consist of delegating the tasks to the background thread, enqueuing them into the jobs queue.  
 The thread drains the queue and provides the execution context, a separate one from the thread(s) from which   
 the tasks are sent (senders), in which they will be executed <i>sequentially</i>, in order of arrival (FIFO).  
-The caller threads can be also synchronized on result of task being executed, waiting on signaling the execution completion  
-through the communication channel (std::future).  
+The caller threads can be also synchronized on result of task being executed, waiting on signaling the execution  
+completion through the communication channel (std::future).  
 
 This concept is heavily used for <b>asynchronous message-based communication</b>, binding the callable with the data,  
 ensuring the uniform - parameterless signature of the messages (jobs) that will be stored into homogeneous queue,  
@@ -62,7 +62,7 @@ Typically, we would use this approach for
 
 Some frameworks/libraries have already embedded implementation of this concept.  
 In Android, there is a
-- <i>HandlerThread</i>: a thread context, with
+- <i>HandlerThread</i>: a thread as execution context, with
 - <i>Looper</i>: that enqueues the messages into MessageQueue and dispatch them to
 - <i>Handler</i>: the one with overriden - custom message handling
 
