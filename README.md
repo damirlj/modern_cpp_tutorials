@@ -30,8 +30,8 @@ Thanks in advance.
 
 ## Tutorial 1 <a name="tut1"/>
 
-<b>AOT – Active Object Thread</b> concurrency design pattern is introduced, as way to decouple the tasks (callables)  
-from the execution context.  
+<b>AOT – Active Object Thread</b> concurrency design pattern is introduced, as way to decouple the tasks  
+(callables) from the execution context.  
 The mechanics consist of delegating the tasks to the background thread, enqueuing them into the jobs queue.  
 The thread drains the queue and provides the execution context, a separate one from the thread(s) from which   
 the tasks are sent (senders), in which they will be executed <i>sequentially</i>, in order of arrival (FIFO).  
@@ -45,25 +45,34 @@ for further processing: preserving the order of execution (first come, first ser
 Typically, we would use this approach for
 
 * <i>Producer-consumer</i> scenarios (audio, video streaming, etc.)  
-  AOT can be used to compensate the difference in producer-consumer rate, in a non-blocking way
-* [Actor model](https://en.wikipedia.org/wiki/Actor_model)
-  Having a network of actors - stateful entities that send/receive messages to each others, doing a  
-  particular job in parallel.
-  The actors can be implemented as AOT, with difference that the working queue is not bounded to  
-  a particular thread, but it will be hosted on-demand, from some preallocated thread in a pool, using Scheduler.  
+  AOT can be used to compensate the difference in producer-consumer rate, in a non-blocking way,    
+  by submitting the producer (decoding/rendering) tasks into the consumer's job queue
+* [Actor model](https://en.wikipedia.org/wiki/Actor_model)  
+  Having a network of actors - stateful entities that send/receive messages to each others,  
+  or even creating a new task, and doing a job in parallel.  
+  The Actor can be seen as a task handler, that will be dynamically - on demand,  
+  assigned via Scheduler to the execution unit (thread/thread pool: bounded with the number of physical cores),  
+  that can be implemented as AOT as well.  
   The actors play microservices in distributed, well scalled architectures.  
+  
+  @note This is exactly how <i>Sender/Receiver</i> (std::execution) concept is implemented later on, in [C++26](https://www.modernescpp.com/index.php/stdexecution).  
+  Likely, this is inspired by the Java Executor framework, and Reactive (Rx*) library.  
+  	* Composable asynchronous tasks, decoupled from the execution context  
+  	* Customization points, that specify how sender/receiver interact
+  	* Lazyness - the task(s) will be executed at the point when the receiver is attached  
+  
 * For <b>event-driven architectures</b>  
   One example would be asynchronous native updates over JNI, which involves calling the Java  
   callbacks as the way to propagate these messages.  
-  This is to ensure that the same native thread will be attached to the JVM thread, for    
-  hosting the different Java callbacks invokations (updates) from the native space,  
-  since frequent attaching-detaching the native to JVM thread is expensive
+  This is to ensure that the same native thread will be attached to the JVM thread, for hosting the  
+  different Java callbacks invokations (updates) from the native space, since frequent attaching-detaching  
+  the native to JVM thread is expensive
 
 Some frameworks/libraries have already embedded implementation of this concept.  
-In Android, there is a
-- <i>HandlerThread</i>: a thread as execution context, with
+In <b>Android</b>, there is a
+- <i>HandlerThread</i>: a thread as an execution context with
 - <i>Looper</i>: that enqueues the messages into MessageQueue and dispatch them to
-- <i>Handler</i>: the one with overriden - custom specific message handling
+- <i>Handler</i>: the one with overriden - custom-specific message handling
 
 [Possible C++ implementation](/src/AOT)
 
