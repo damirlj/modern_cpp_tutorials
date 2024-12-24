@@ -59,11 +59,11 @@ Typically, we would use this approach for
   Likely, this is inspired by the Java Executor framework, and Reactive (Rx*) library.  
   	* Composable asynchronous tasks, decoupled from the execution context  
   	* Customization points, that specify how sender/receiver interact
-  	* Lazyness - the task(s) will be executed at the point when the receiver is attached  
+  	* Lazyness - the task(s) will be executed at the point when the receiver is attached (pulling vs. pushing) 
   
 * For <b>event-driven architectures</b>  
-  One example would be asynchronous native updates over JNI, which involves calling the Java  
-  callbacks as the way to propagate these messages.  
+  One example would be asynchronous native updates over [JNI](/docs/android), which involves calling the Java  
+  callbacks as the way to propagate these messages to Java/Android domain.  
   This is to ensure that the same native thread will be attached to the JVM thread, for hosting the  
   different Java callbacks invokations (updates) from the native space, since frequent attaching-detaching  
   the native to JVM thread is expensive
