@@ -58,7 +58,7 @@ Typically, we would use this approach for
   @note This is exactly how <i>Sender/Receiver</i> (std::execution) concept is implemented later on, in [C++26](https://www.modernescpp.com/index.php/stdexecution).  
   Likely, this is inspired by the Java Executor framework, and Reactive (Rx*) library.  
   	* Composable asynchronous tasks, decoupled from the execution context  
-  	* Customization points, that specify how sender/receiver interacts
+  	* Customization points, that specify how sender/receiver interact
   	* Lazyness - the task(s) will be executed at the point when the receiver is attached (pulling vs. pushing) 
   
 * For <b>event-driven architectures</b>  
