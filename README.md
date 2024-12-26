@@ -74,7 +74,7 @@ In <b>Android</b>, there is a
 - <i>Looper</i>: that enqueues the messages into MessageQueue and dispatch them to
 - <i>Handler</i>: the one with overriden - custom-specific message handling
 
-[Possible C++ implementation](/src/AOT)
+[Possible C++ implementation](/src/AOT)  
 [Possible Java implementation](/src/AOT/java)
 
 ## Tutorial 2 <a name="tut2"/>
