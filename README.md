@@ -75,6 +75,7 @@ In <b>Android</b>, there is a
 - <i>Handler</i>: the one with overriden - custom-specific message handling
 
 [Possible C++ implementation](/src/AOT)
+[Possible Java implementation](/src/AOT/java)
 
 ## Tutorial 2 <a name="tut2"/>
 <b>Type traits</b> are small objects for inspecting the type (rather than value) at compile time.
