@@ -5,6 +5,8 @@
  */
 package <your package>;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,11 +38,12 @@ public final class Looper {
         }
       };
 
-  public Runnable getRunnable() {
+  @NotNull
+  public Runnable getLooper() {
     return looper;
   }
 
-  public void submit(Runnable task) throws InterruptedException {
+  public void submit(@NotNull Runnable task) throws InterruptedException {
     queue.put(task);
   }
 }

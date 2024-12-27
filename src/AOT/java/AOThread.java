@@ -22,7 +22,7 @@ public final class AOThread {
 
   /** Start the AOT: Attach the Looper with the execution context */
   public void start() {
-    executionContext.submit(looper.getRunnable());
+    executionContext.submit(looper.getLooper());
   }
 
   @FunctionalInterface
