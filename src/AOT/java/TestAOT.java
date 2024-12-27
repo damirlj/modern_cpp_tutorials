@@ -13,7 +13,10 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -97,28 +100,28 @@ public class TestAOT {
                         final long timeout = 300L;
                         Thread.sleep(timeout);
                         System.out.printf(
-                            "Calling from thread: %s, after %d[ms]\n",
+                            "Executing within thread: \"%s\", after %d[ms]\n",
                             Thread.currentThread().getName(), timeout);
                       },
                       () -> {
                         final long timeout = 100L;
                         Thread.sleep(timeout);
                         System.out.printf(
-                            "Calling from thread: %s, after %d[ms]\n",
+                            "Executing within thread: \"%s\", after %d[ms]\n",
                             Thread.currentThread().getName(), timeout);
                       },
                       () -> {
                         final long timeout = 200L;
                         Thread.sleep(timeout);
                         System.out.printf(
-                            "Calling from thread: %s, after %d[ms]\n",
+                            "Executing within thread: \"%s\", after %d[ms]\n",
                             Thread.currentThread().getName(), timeout);
                       });
-              
+
               for (AOThread.IJob callable : callables) {
                 aot.enqueue(callable);
                 try {
-                  Thread.sleep(100);
+                  Thread.sleep(1000);
                 } catch (InterruptedException e) {
                   e.printStackTrace();
                 }
@@ -130,5 +133,51 @@ public class TestAOT {
     client.join();
 
     aot.stop(1, TimeUnit.SECONDS);
+  }
+
+  @Test
+  public void test_bothOfThem() throws InterruptedException {
+    final AOThread aot = new AOThread();
+    aot.start();
+
+    Thread client =
+        new Thread(
+            () -> {
+              aot.enqueue(
+                  () -> {
+                    final long timeout = 300L;
+                    Thread.sleep(timeout);
+                    System.out.printf(
+                        "Executing within thread: \"%s\", after %d[ms]\n",
+                        Thread.currentThread().getName(), timeout);
+                  });
+
+              Optional<CompletableFuture<String>> r =
+                  aot.enqueueWithResult(
+                      () -> {
+                        final long timeout = 100L;
+                        Thread.sleep(timeout);
+                        return String.format(
+                            "Executing within thread: \"%s\", after %d[ms]",
+                            Thread.currentThread().getName(), timeout);
+                      });
+
+              r.ifPresent(
+                  result -> {
+                    try {
+                      System.out.printf(
+                          "(Thread: \"%s\") Receiving result: %s\n",
+                          Thread.currentThread().getName(), result.get());
+                    } catch (ExecutionException | InterruptedException e) {
+                      e.printStackTrace();
+                    }
+                  });
+            },
+            "t_client");
+
+    client.start();
+    client.join();
+
+    aot.stopNow();
   }
 }
