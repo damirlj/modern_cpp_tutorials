@@ -3,7 +3,7 @@
  * @email: damirlj@yahoo.com
  *     <p>All rights reserved!
  */
-package de.esolutions.airplay.helper.aot;
+package <your own package>;
 
 import org.jetbrains.annotations.NotNull;
 
