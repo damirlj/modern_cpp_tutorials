@@ -3,7 +3,7 @@
  * @email: damirlj@yahoo.com
  *     <p>All rights reserved!
  */
-package <your package>;
+package <your own package>;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -119,7 +119,7 @@ public final class AOThread {
       try{
         job.execute();
       }catch(Exception e) {
-        e.printStackTrace();
+        e.printStackTrace(); // your own logging
       }
     };
 
