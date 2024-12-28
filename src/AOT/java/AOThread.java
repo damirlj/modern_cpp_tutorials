@@ -31,7 +31,7 @@ public final class AOThread {
   }
 
   /** Stop thread which drain the message queue */
-  private void stop(@NotNull IStopThread callback) {
+  private void stop(@NotNull IStopThread callback) throws InterruptedException {
     looper.stop(); // set the exit flag
     callback.stop(executionContext);
   }
@@ -42,7 +42,7 @@ public final class AOThread {
    * @param timeout The timeout to wait for
    * @param unit The time unit for the timeout to be expressed with
    */
-  public void stop(long timeout, TimeUnit unit) {
+  public void stop(long timeout, TimeUnit unit) throws InterruptedException {
     stop(
         executor -> {
           executor.shutdown(); // initiate shutdown
@@ -62,11 +62,11 @@ public final class AOThread {
    *
    * @note There is no guarantees that the last running task will be successfully interrupted
    */
-  public void stopNow() {
+  public void stopNow() throws InterruptedException {
     stop(ExecutorService::shutdownNow);
   }
 
-  public void submit(@NotNull Runnable task) throws InterruptedException {
+  private void submit(@NotNull Runnable task) throws InterruptedException {
     looper.submit(task);
   }
 
@@ -119,7 +119,7 @@ public final class AOThread {
       try{
         job.execute();
       }catch(Exception e) {
-        e.printStackTrace(); // your own logging
+        e.printStackTrace();
       }
     };
 

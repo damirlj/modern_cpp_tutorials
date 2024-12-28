@@ -4,7 +4,7 @@
  *     <p>All rights reserved!
  */
 
-package <your package>;
+package <your own package>;
 
 import androidx.annotation.NonNull;
 
@@ -151,7 +151,7 @@ public class TestAOT {
                         "Executing within thread: \"%s\", after %d[ms]\n",
                         Thread.currentThread().getName(), timeout);
                   });
-
+              aot.enqueue(()->{}); // this will not brake the looper
               Optional<CompletableFuture<String>> r =
                   aot.enqueueWithResult(
                       () -> {
