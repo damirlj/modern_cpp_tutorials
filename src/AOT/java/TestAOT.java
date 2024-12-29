@@ -3,7 +3,6 @@
  * @email: damirlj@yahoo.com
  *     <p>All rights reserved!
  */
-
 package <your own package>;
 
 import androidx.annotation.NonNull;
@@ -44,26 +43,14 @@ public class TestAOT {
     }
   }
 
-  private static final List<Callable<String>> callables =
-      List.of(
-          () -> {
-            final long timeout = 400L;
-            Thread.sleep(timeout);
-            return String.format( // it's always hosted by the same thread - execution context
-                "(thread: %s): Sleeping for %d[ms]", Thread.currentThread().getName(), timeout);
-          },
-          () -> {
-            final long timeout = 250L;
-            Thread.sleep(timeout);
-            return String.format(
-                "(thread: %s): Sleeping for %d[ms]", Thread.currentThread().getName(), timeout);
-          },
-          () -> {
-            final long timeout = 500L;
-            Thread.sleep(timeout);
-            return String.format(
-                "(thread: %s): Sleeping for %d[ms]", Thread.currentThread().getName(), timeout);
-          });
+  @NotNull
+  private Callable<String> createCallable(long timeout) {
+    return () -> {
+      Thread.sleep(timeout); // simulate some work
+      return String.format( // it's always hosted by the same thread - execution context
+          "(thread: %s): Sleeping for %d[ms]", Thread.currentThread().getName(), timeout);
+    };
+  }
 
   @Test
   public void test_AOTWaitingOnResults() throws InterruptedException {
@@ -73,6 +60,8 @@ public class TestAOT {
     Thread client =
         new Thread(
             () -> {
+              final List<Callable<String>> callables =
+                  List.of(createCallable(200L), createCallable(100L), createCallable(300L));
               final List<Future<String>> results = submitTasks_withResults(callables, aot);
               // Client: synchronized on the result
               syncOnResults_blocking(results, System.out::println);
@@ -85,6 +74,16 @@ public class TestAOT {
     aot.stopNow();
   }
 
+  @NotNull
+  private AOThread.IJob createJob(long timeout) {
+    return () -> {
+      Thread.sleep(timeout); // simulate some work
+      System.out.printf(
+          "Executing within thread: \"%s\", after %d[ms]\n",
+          Thread.currentThread().getName(), timeout);
+    };
+  }
+
   @Test
   public void test_AOTWithoutWaitingOnResults() throws InterruptedException {
 
@@ -94,30 +93,7 @@ public class TestAOT {
     Thread client =
         new Thread(
             () -> {
-              final List<AOThread.IJob> callables =
-                  List.of(
-                      () -> {
-                        final long timeout = 300L;
-                        Thread.sleep(timeout);
-                        System.out.printf(
-                            "Executing within thread: \"%s\", after %d[ms]\n",
-                            Thread.currentThread().getName(), timeout);
-                      },
-                      () -> {
-                        final long timeout = 100L;
-                        Thread.sleep(timeout);
-                        System.out.printf(
-                            "Executing within thread: \"%s\", after %d[ms]\n",
-                            Thread.currentThread().getName(), timeout);
-                      },
-                      () -> {
-                        final long timeout = 200L;
-                        Thread.sleep(timeout);
-                        System.out.printf(
-                            "Executing within thread: \"%s\", after %d[ms]\n",
-                            Thread.currentThread().getName(), timeout);
-                      });
-
+              final List<AOThread.IJob> callables = List.of(createJob(200L), createJob(100L));
               for (AOThread.IJob callable : callables) {
                 aot.enqueue(callable);
                 try {
@@ -143,24 +119,10 @@ public class TestAOT {
     Thread client =
         new Thread(
             () -> {
-              aot.enqueue(
-                  () -> {
-                    final long timeout = 300L;
-                    Thread.sleep(timeout);
-                    System.out.printf(
-                        "Executing within thread: \"%s\", after %d[ms]\n",
-                        Thread.currentThread().getName(), timeout);
-                  });
-              aot.enqueue(()->{}); // this will not brake the looper
-              Optional<CompletableFuture<String>> r =
-                  aot.enqueueWithResult(
-                      () -> {
-                        final long timeout = 100L;
-                        Thread.sleep(timeout);
-                        return String.format(
-                            "Executing within thread: \"%s\", after %d[ms]",
-                            Thread.currentThread().getName(), timeout);
-                      });
+              aot.enqueue(createJob(100L));
+              aot.enqueue(() -> {}); // this will not brake the looper
+
+              Optional<CompletableFuture<String>> r = aot.enqueueWithResult(createCallable(200L));
 
               r.ifPresent(
                   result -> {
