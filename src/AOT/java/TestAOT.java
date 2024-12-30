@@ -32,14 +32,18 @@ public class TestAOT {
     return results;
   }
 
-  private <R> void syncOnResults_blocking(
-      @NotNull List<Future<R>> results, @NotNull Consumer<R> callback) {
+  private <R> void fetchResultOrException(
+      @NonNull Future<R> result, @NotNull Consumer<R> callback) {
+    try {
+      callback.accept(result.get()); // blocking call: wait on result being set
+    } catch (ExecutionException | InterruptedException e) { // or exception being thrown
+      e.printStackTrace();
+    }
+  }
+
+  private <R> void syncOnResults(@NotNull List<Future<R>> results, @NotNull Consumer<R> callback) {
     for (Future<R> result : results) {
-      try {
-        callback.accept(result.get()); // blocking call
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+      fetchResultOrException(result, callback);
     }
   }
 
@@ -64,7 +68,7 @@ public class TestAOT {
                   List.of(createCallable(200L), createCallable(100L), createCallable(300L));
               final List<Future<String>> results = submitTasks_withResults(callables, aot);
               // Client: synchronized on the result
-              syncOnResults_blocking(results, System.out::println);
+              syncOnResults(results, System.out::println);
             },
             "t_client");
 
@@ -119,21 +123,21 @@ public class TestAOT {
     Thread client =
         new Thread(
             () -> {
+              // Submit, without waiting
               aot.enqueue(createJob(100L));
               aot.enqueue(() -> {}); // this will not brake the looper
 
-              Optional<CompletableFuture<String>> r = aot.enqueueWithResult(createCallable(200L));
-
-              r.ifPresent(
-                  result -> {
-                    try {
-                      System.out.printf(
-                          "(Thread: \"%s\") Receiving result: %s\n",
-                          Thread.currentThread().getName(), result.get());
-                    } catch (ExecutionException | InterruptedException e) {
-                      e.printStackTrace();
-                    }
-                  });
+              // Wait on result, or exception being set
+              Optional<CompletableFuture<String>> opFut =
+                  aot.enqueueWithResult(createCallable(200L));
+              opFut.ifPresent(
+                  fut ->
+                      fetchResultOrException(
+                          fut,
+                          res ->
+                              System.out.printf(
+                                  "(Thread: \"%s\") Receiving result: %s\n",
+                                  Thread.currentThread().getName(), res)));
             },
             "t_client");
 
