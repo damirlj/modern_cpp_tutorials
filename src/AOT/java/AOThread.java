@@ -30,7 +30,7 @@ public final class AOThread {
     void stop(@NotNull ExecutorService executor);
   }
 
-  /** Stop thread which drain the message queue */
+  /** Stop thread which drains the message queue */
   private void stop(@NotNull IStopThread callback) throws InterruptedException {
     looper.stop(); // set the exit flag
     callback.stop(executionContext);
@@ -71,8 +71,8 @@ public final class AOThread {
   }
 
   /**
-   * Submit the job to execution context. The client will be synchronized with the result of the
-   * execution.
+   * Submit the task to the Looper (job-queue). <br>
+   * The client will be synchronized on the result of the execution.
    *
    * @param job The task to be enqueued
    * @return The future object - for synchronizing on the execution outcome
@@ -109,16 +109,16 @@ public final class AOThread {
   }
 
   /**
-   * Submit the job to the execution context. <br>
+   * Submit the job to the Looper. <br>
    * Fire-and-forget: client will not wait on the outcome of execution, if any.
    *
    * @param job The task to be executed
    */
   public void enqueue(@NotNull IJob job) {
     Runnable task = ()->{
-      try{
+      try {
         job.execute();
-      }catch(Exception e) {
+      } catch(Exception e) {
         e.printStackTrace(); // your own logging
       }
     };
