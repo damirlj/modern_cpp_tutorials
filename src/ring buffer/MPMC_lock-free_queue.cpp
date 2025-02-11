@@ -1,3 +1,10 @@
+/**
+* @author: Damir Ljubic
+* @email: damirlj@yahoo.com
+
+* All rights reserved!
+*/
+
 #include <atomic>
 #include <array>
 #include <vector>
@@ -32,7 +39,7 @@ namespace utils::mpmc
         public:
 
             using value_type = std::remove_cvref_t<T>;
-                       
+
             std::optional<value_type> pop(const std::atomic_flag& stop) noexcept (std::is_nothrow_move_constructible_v<value_type>)
             {
                 for (;;)
@@ -131,7 +138,7 @@ namespace utils::mpmc
                     return ((tail + 1) & (N - 1)) == head_.load(std::memory_order_acquire); 
                 };
 
-                return full();    
+                return full();
             }
 
             inline bool is_empty(size_t head) const 
@@ -245,7 +252,7 @@ int main()
     t_producers.reserve(Producers);
     for (int i = 0; i < Producers; ++i)
     {
-        t_producers.emplace_back([q] { producer(q); });       
+        t_producers.emplace_back([q] { producer(q); });
     }
     for (auto& producer : t_producers) producer.join();
 
