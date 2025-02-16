@@ -28,10 +28,10 @@ namespace utils::mpmc
     requires is_power_of_2<N>
     class queue final
     {
-        inline std::size_t inc(std::size_t i) const
-        {
-            return (i + 1) & (N - 1);
-        }
+            inline std::size_t inc(std::size_t i) const
+            {
+                return (i + 1) & (N - 1);
+            }
 
         public:
 
@@ -39,7 +39,8 @@ namespace utils::mpmc
 
 
             // Pop that returns optionally the value - or brakes on the stop being signaled       
-            std::optional<value_type> pop(const std::atomic_flag& stop) noexcept (std::is_nothrow_move_constructible_v<value_type>)
+            std::optional<value_type> pop(const std::atomic_flag& stop) 
+            noexcept (std::is_nothrow_move_constructible_v<value_type>)
             {
                 for (;;)
                 {
@@ -58,7 +59,8 @@ namespace utils::mpmc
             }
 
             // Pop that returns optionally the value - or brakes on the stop being signaled, or timeout being expired
-            std::optional<value_type> pop_wait_for(const std::atomic_flag& stop, std::chrono::milliseconds timeout) noexcept (std::is_nothrow_move_constructible_v<value_type>)
+            std::optional<value_type> pop_wait_for(const std::atomic_flag& stop, std::chrono::milliseconds timeout) 
+            noexcept (std::is_nothrow_move_constructible_v<value_type>)
             {
                 using namespace std::chrono;
 
@@ -66,7 +68,6 @@ namespace utils::mpmc
 
                 for (;;)
                 {
-                    
                     auto head = head_.load(std::memory_order_relaxed); 
                     if (not is_empty() && head_.compare_exchange_strong(head, inc(head), std::memory_order_release))
                     {
@@ -86,11 +87,10 @@ namespace utils::mpmc
             // Pop that rather invokes the given callable 
             template <typename Func>
             requires std::invocable<Func, value_type>
-            void pop(Func&& func, const std::atomic_flag& stop) noexcept (std::is_nothrow_move_constructible_v<value_type>)
+            void pop(Func&& func, const std::atomic_flag& stop)
             {
                 for (;;)
                 {
-                    
                     auto head = head_.load(std::memory_order_relaxed); 
                     if (not is_empty() && head_.compare_exchange_strong(head, inc(head), std::memory_order_release))
                     {
@@ -98,14 +98,12 @@ namespace utils::mpmc
                     }
 
                     if (stop.test(std::memory_order_relaxed)) break;
+                    
                     std::this_thread::yield();
                 }
-                
             }
 
-
-            
-                       
+            // Enqueuing interface - for multiple producers                       
             template <typename U>
             requires std::convertible_to<U, value_type>
             bool push(U&& u) noexcept (std::is_nothrow_constructible_v<U>)
@@ -176,9 +174,7 @@ namespace utils::mpmc
                 return is_empty(head);
             }
 
-            
-        
-                       
+                              
         private:
             alignas(64) std::array<value_type, N> data_;
             alignas(64) std::atomic<std::size_t> head_ {0};
@@ -255,7 +251,8 @@ int main()
 {
     std::atomic_flag stop {false};
 
-    using job_queue = utils::mpmc::queue<std::function<void()>, 8>; // set the low queue depth - less than producer threads that concurently access it: for rigid test
+    // set the low queue depth - less than producer threads that concurently access it: for rigid test
+    using job_queue = utils::mpmc::queue<std::function<void()>, 8>; 
     auto q = std::make_shared<job_queue>();
   
 
