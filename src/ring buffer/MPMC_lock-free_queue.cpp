@@ -1,10 +1,3 @@
-/**
-* @author: Damir Ljubic
-* @email: damirlj@yahoo.com
-
-* All rights reserved!
-*/
-
 #include <atomic>
 #include <array>
 #include <vector>
@@ -20,8 +13,8 @@
 #include <syncstream>
 #include <cassert>
 
+// <Compiler Explorer>: https://godbolt.org/z/4Mhahn5Eq
 
-// <Compile Explorer> https://godbolt.org/z/KEEvavfxd
 namespace utils::mpmc
 {
     template <std::size_t N>
@@ -35,21 +28,26 @@ namespace utils::mpmc
     requires is_power_of_2<N>
     class queue final
     {
+        inline std::size_t inc(std::size_t i) const
+        {
+            return (i + 1) & (N - 1);
+        }
 
         public:
 
             using value_type = std::remove_cvref_t<T>;
 
+
+            // Pop that returns optionally the value - or brakes on the stop being signaled       
             std::optional<value_type> pop(const std::atomic_flag& stop) noexcept (std::is_nothrow_move_constructible_v<value_type>)
             {
                 for (;;)
                 {
                     
                     auto head = head_.load(std::memory_order_relaxed); 
-                    if (not is_empty() && head_.compare_exchange_strong(head, (head + 1) & (N - 1), std::memory_order_release))
+                    if (not is_empty() && head_.compare_exchange_strong(head, inc(head), std::memory_order_release))
                     {
-                        auto data = std::optional<value_type>(std::move(data_[head]));
-                        return data;
+                        return std::optional<value_type>(std::move(data_[head]));
                     }
 
                     if (stop.test(std::memory_order_relaxed)) break;
@@ -57,9 +55,9 @@ namespace utils::mpmc
                 }
                 
                 return {};
-                
             }
 
+            // Pop that returns optionally the value - or brakes on the stop being signaled, or timeout being expired
             std::optional<value_type> pop_wait_for(const std::atomic_flag& stop, std::chrono::milliseconds timeout) noexcept (std::is_nothrow_move_constructible_v<value_type>)
             {
                 using namespace std::chrono;
@@ -70,10 +68,10 @@ namespace utils::mpmc
                 {
                     
                     auto head = head_.load(std::memory_order_relaxed); 
-                    if (not is_empty() && head_.compare_exchange_strong(head, (head + 1) & (N - 1), std::memory_order_release))
+                    if (not is_empty() && head_.compare_exchange_strong(head, inc(head), std::memory_order_release))
                     {
-                        auto data = std::optional<value_type>(std::move(data_[head]));
-                        return data;
+                        return std::optional<value_type>(std::move(data_[head]));
+                        
                     }
 
                     if (stop.test(std::memory_order_relaxed)) break;
@@ -85,6 +83,27 @@ namespace utils::mpmc
                 return {};
             }
 
+            // Pop that rather invokes the given callable 
+            template <typename Func>
+            requires std::invocable<Func, value_type>
+            void pop(Func&& func, const std::atomic_flag& stop) noexcept (std::is_nothrow_move_constructible_v<value_type>)
+            {
+                for (;;)
+                {
+                    
+                    auto head = head_.load(std::memory_order_relaxed); 
+                    if (not is_empty() && head_.compare_exchange_strong(head, inc(head), std::memory_order_release))
+                    {
+                        std::invoke(std::forward<Func>(func), std::move(data_[head]));
+                    }
+
+                    if (stop.test(std::memory_order_relaxed)) break;
+                    std::this_thread::yield();
+                }
+                
+            }
+
+
             
                        
             template <typename U>
@@ -92,7 +111,7 @@ namespace utils::mpmc
             bool push(U&& u) noexcept (std::is_nothrow_constructible_v<U>)
             {
                 auto tail = tail_.load(std::memory_order_relaxed); // expected value - otherwise, another producer modifies it
-                while (is_full() || not tail_.compare_exchange_weak(tail, (tail + 1) & (N - 1), std::memory_order_release))
+                while (is_full() || not tail_.compare_exchange_weak(tail, inc(tail), std::memory_order_release))
                 {
                     std::this_thread::yield();
                 }
@@ -113,7 +132,7 @@ namespace utils::mpmc
                 for (;;)
                 {
                     auto tail = tail_.load(std::memory_order_relaxed);
-                    if (not is_full() && tail_.compare_exchange_strong(tail, (tail + 1) & (N - 1), std::memory_order_release))
+                    if (not is_full() && tail_.compare_exchange_strong(tail, inc(tail), std::memory_order_release))
                     {
                         data_[tail] = std::forward<U>(u);
                         return true;   
@@ -135,10 +154,10 @@ namespace utils::mpmc
                 const auto full = [=, this] 
                 { 
                     const auto tail = tail_.load(std::memory_order_relaxed);
-                    return ((tail + 1) & (N - 1)) == head_.load(std::memory_order_acquire); 
+                    return inc(tail) == head_.load(std::memory_order_acquire); 
                 };
 
-                return full();
+                return full();    
             }
 
             inline bool is_empty(size_t head) const 
@@ -157,7 +176,9 @@ namespace utils::mpmc
                 return is_empty(head);
             }
 
+            
         
+                       
         private:
             alignas(64) std::array<value_type, N> data_;
             alignas(64) std::atomic<std::size_t> head_ {0};
@@ -252,7 +273,7 @@ int main()
     t_producers.reserve(Producers);
     for (int i = 0; i < Producers; ++i)
     {
-        t_producers.emplace_back([q] { producer(q); });
+        t_producers.emplace_back([q] { producer(q); });       
     }
     for (auto& producer : t_producers) producer.join();
 
