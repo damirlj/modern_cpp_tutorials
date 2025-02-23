@@ -1,3 +1,10 @@
+/*
+* Author: Damir Ljubic
+* email: damirlj@yahoo.com
+
+* All rights reserved!
+*/
+
 #include <atomic>
 #include <array>
 #include <vector>
