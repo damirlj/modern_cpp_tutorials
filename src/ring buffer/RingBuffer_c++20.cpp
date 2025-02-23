@@ -1,7 +1,7 @@
 /*
 * Author: Damir Ljubic
 * email: damirlj@yahoo.com
-
+* @2024
 * All rights reserved!
 */
 
@@ -77,11 +77,10 @@ namespace utils
             readSemaphore_.release();  // signal consumer data readiness
         }
 
-        // clang-format off
+        
         template <typename Collection>
         requires std::convertible_to<decltype(*std::declval<Collection&>().begin()), T>
         std::size_t write(Collection&& collection)
-        // clang-format on
         {
             const auto written = std::min(BlockSize, collection.size());
             writeSemaphore_.acquire();
@@ -95,7 +94,9 @@ namespace utils
                 std::copy(col.cbegin(), std::next(col.cbegin(), written), block.data_.begin());
                 writeIndex_ = (writeIndex_ + 1) & MASK;
             }
+            
             readSemaphore_.release();
+            
             return written;
         }
 
@@ -169,7 +170,7 @@ namespace utils
 
       private:
         template <typename Func>
-            requires std::invocable<Func, block_type>
+        requires std::invocable<Func, block_type>
         bool readImpl(Func&& func)
         {
             {
@@ -182,6 +183,7 @@ namespace utils
             writeSemaphore_.release();
             return true;
         }
+
         template <typename Func, typename... Args>
         bool readImpl(Func&& func, block_type& block, Args&&... args)
         {
