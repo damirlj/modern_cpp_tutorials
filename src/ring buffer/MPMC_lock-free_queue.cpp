@@ -1,7 +1,7 @@
 /*
 * Author: Damir Ljubic
 * email: damirlj@yahoo.com
-
+* @2025
 * All rights reserved!
 */
 
@@ -14,13 +14,13 @@
 #include <thread>
 #include <chrono>
 
+#include <immintrin.h> // _mm_pause
+
 // Testing
 #include <iostream>
 #include <memory>
 #include <syncstream>
 #include <cassert>
-
-// <Compiler Explorer>: https://godbolt.org/z/4Mhahn5Eq
 
 namespace utils::mpmc
 {
@@ -29,45 +29,48 @@ namespace utils::mpmc
 
     /**
      * @brief Multiple-Producers Multiple-Consumers queue
+     * Lock-free implementation (first draft)
+     * @todo: 
+     * - deal with ABA issue
+     * - deal with the thread contention
      * 
     */
     template <typename T, std::size_t N>
     requires is_power_of_2<N>
     class queue final
     {
-            inline std::size_t inc(std::size_t i) const
-            {
-                return (i + 1) & (N - 1);
-            }
+        inline std::size_t inc(std::size_t i) const
+        {
+            return (i + 1) & (N - 1);
+        }
 
         public:
 
             using value_type = std::remove_cvref_t<T>;
 
 
-            // Pop that returns optionally the value - or brakes on the stop being signaled       
-            std::optional<value_type> pop(const std::atomic_flag& stop) 
-            noexcept (std::is_nothrow_move_constructible_v<value_type>)
+            // Pop that returns optionally the value - or brakes on the stop being signaled
+            std::optional<value_type> pop(const std::atomic_flag& stop) noexcept (std::is_nothrow_move_constructible_v<value_type>)
             {
                 for (;;)
                 {
                     
                     auto head = head_.load(std::memory_order_relaxed); 
-                    if (not is_empty() && head_.compare_exchange_strong(head, inc(head), std::memory_order_release))
+                    if (not is_empty(head) && head_.compare_exchange_strong(head, inc(head), std::memory_order_release))
                     {
                         return std::optional<value_type>(std::move(data_[head]));
                     }
 
                     if (stop.test(std::memory_order_relaxed)) break;
-                    std::this_thread::yield();
+
+                    _mm_pause();
                 }
                 
                 return {};
             }
 
             // Pop that returns optionally the value - or brakes on the stop being signaled, or timeout being expired
-            std::optional<value_type> pop_wait_for(const std::atomic_flag& stop, std::chrono::milliseconds timeout) 
-            noexcept (std::is_nothrow_move_constructible_v<value_type>)
+            std::optional<value_type> pop_wait_for(const std::atomic_flag& stop, std::chrono::milliseconds timeout) noexcept (std::is_nothrow_move_constructible_v<value_type>)
             {
                 using namespace std::chrono;
 
@@ -75,42 +78,44 @@ namespace utils::mpmc
 
                 for (;;)
                 {
+                    
                     auto head = head_.load(std::memory_order_relaxed); 
-                    if (not is_empty() && head_.compare_exchange_strong(head, inc(head), std::memory_order_release))
+                    if (not is_empty(head) && head_.compare_exchange_strong(head, inc(head), std::memory_order_release))
                     {
                         return std::optional<value_type>(std::move(data_[head]));
-                        
                     }
 
                     if (stop.test(std::memory_order_relaxed)) break;
                     if (duration_cast<milliseconds>(steady_clock::now() - start) > timeout) break;
 
-                    std::this_thread::yield();
+                    _mm_pause();
                 }
                 
                 return {};
             }
 
-            // Pop that rather invokes the given callable 
+            // Pop that rather invokes the given callable
             template <typename Func>
             requires std::invocable<Func, value_type>
-            void pop(Func&& func, const std::atomic_flag& stop)
+            void pop(Func&& func, const std::atomic_flag& stop) noexcept (std::is_nothrow_move_constructible_v<value_type>)
             {
                 for (;;)
                 {
+                    
                     auto head = head_.load(std::memory_order_relaxed); 
-                    if (not is_empty() && head_.compare_exchange_strong(head, inc(head), std::memory_order_release))
+                    if (not is_empty(head) && head_.compare_exchange_strong(head, inc(head), std::memory_order_release))
                     {
                         std::invoke(std::forward<Func>(func), std::move(data_[head]));
                     }
 
                     if (stop.test(std::memory_order_relaxed)) break;
-                    
-                    std::this_thread::yield();
+
+                    _mm_pause();
                 }
+                
             }
 
-            // Enqueuing interface - for multiple producers                       
+                         
             template <typename U>
             requires std::convertible_to<U, value_type>
             bool push(U&& u) noexcept (std::is_nothrow_constructible_v<U>)
@@ -118,7 +123,7 @@ namespace utils::mpmc
                 auto tail = tail_.load(std::memory_order_relaxed); // expected value - otherwise, another producer modifies it
                 while (is_full() || not tail_.compare_exchange_weak(tail, inc(tail), std::memory_order_release))
                 {
-                    std::this_thread::yield();
+                    _mm_pause();
                 }
 
                 data_[tail] = std::forward<U>(u);
@@ -137,14 +142,15 @@ namespace utils::mpmc
                 for (;;)
                 {
                     auto tail = tail_.load(std::memory_order_relaxed);
-                    if (not is_full() && tail_.compare_exchange_strong(tail, inc(tail), std::memory_order_release))
+                    if (not is_full(tail) && tail_.compare_exchange_strong(tail, inc(tail), std::memory_order_release))
                     {
                         data_[tail] = std::forward<U>(u);
                         return true;   
                     }
 
                     if (duration_cast<milliseconds>(steady_clock::now() - start) > timeout) break;
-                    std::this_thread::yield();  
+
+                    _mm_pause();
                 }
 
                 return false;
@@ -154,15 +160,20 @@ namespace utils::mpmc
 
         private:
 
-            inline bool is_full() const 
+            inline bool is_full(std::size_t tail) const 
             {
-                const auto full = [=, this] 
+                const auto full = [tail, this] 
                 { 
-                    const auto tail = tail_.load(std::memory_order_relaxed);
                     return inc(tail) == head_.load(std::memory_order_acquire); 
                 };
 
                 return full();    
+            }
+
+            inline bool is_full() const 
+            {
+                const auto tail = tail_.load(std::memory_order_relaxed);
+                return is_full(tail);
             }
 
             inline bool is_empty(size_t head) const 
@@ -181,11 +192,15 @@ namespace utils::mpmc
                 return is_empty(head);
             }
 
-                              
+            
+        
+                       
         private:
-            alignas(64) std::array<value_type, N> data_;
+            
             alignas(64) std::atomic<std::size_t> head_ {0};
             alignas(64) std::atomic<std::size_t> tail_ {0};
+
+            alignas(64) std::array<value_type, N> data_;
     };
 }
 
