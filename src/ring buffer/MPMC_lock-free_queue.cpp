@@ -14,7 +14,7 @@
 #include <thread>
 #include <chrono>
 
-#include <immintrin.h> // _mm_pause
+//#include <immintrin.h> // _mm_pause
 
 // Testing
 #include <iostream>
@@ -25,92 +25,124 @@
 namespace utils::mpmc
 {
     template <std::size_t N>
-    constexpr bool is_power_of_2 = (N & (N-1)) == 0;
+    constexpr bool is_power_of_2 = (N > 0) && (N & (N-1)) == 0;
 
     /**
      * @brief Multiple-Producers Multiple-Consumers queue
-     * Lock-free implementation (first draft)
-     * @todo: 
-     * - deal with ABA issue
-     * - deal with the thread contention
+     * Lock-free implementation
+     * 
+     * Proper handling the dequeuing sequnece in multi-consumers environment (FIFO)
      * 
     */
     template <typename T, std::size_t N>
     requires is_power_of_2<N>
     class queue final
     {
-        inline std::size_t inc(std::size_t i) const
+        
+        static constexpr auto MASK = N - 1;
+
+        inline void init()
         {
-            return (i + 1) & (N - 1);
+            std::size_t i = 0;
+            std::ignore = std::for_each(std::begin(slots_), std::end(slots_), [&i](auto& slot) mutable
+                {
+                    slot.sequence_.store(i, std::memory_order_relaxed);
+                    ++i;
+                });
         }
 
         public:
 
+            queue() noexcept
+            {
+                init();        
+            }
+
             using value_type = std::remove_cvref_t<T>;
 
 
-            // Pop that returns optionally the value - or brakes on the stop being signaled
+            // Pop that returns optionally the value - or brakes on the stop being signaled       
             std::optional<value_type> pop(const std::atomic_flag& stop) noexcept (std::is_nothrow_move_constructible_v<value_type>)
             {
                 for (;;)
                 {
-                    
                     auto head = head_.load(std::memory_order_relaxed); 
-                    if (not is_empty(head) && head_.compare_exchange_strong(head, inc(head), std::memory_order_release))
+                    auto& slot = slots_[head & MASK];
+                    const auto sequence = static_cast<std::ptrdiff_t>(slot.sequence_.load(std::memory_order_acquire));
+                    if (sequence - static_cast<std::ptrdiff_t>(head + 1) == 0)
                     {
-                        return std::optional<value_type>(std::move(data_[head]));
+                        if (head_.compare_exchange_weak(head, head + 1, std::memory_order_acquire, std::memory_order_relaxed))
+                        {
+                            slot.sequence_.store(head + MASK + 1, std::memory_order_release); // empty slot indication
+                            return std::optional<value_type>(std::move(slot.data_));
+                        }
                     }
-
+                    
                     if (stop.test(std::memory_order_relaxed)) break;
 
-                    _mm_pause();
+                    std::this_thread::yield();
                 }
                 
                 return {};
             }
 
             // Pop that returns optionally the value - or brakes on the stop being signaled, or timeout being expired
-            std::optional<value_type> pop_wait_for(const std::atomic_flag& stop, std::chrono::milliseconds timeout) noexcept (std::is_nothrow_move_constructible_v<value_type>)
+            std::optional<value_type> pop_wait_for(const std::atomic_flag& stop, 
+                                                   std::chrono::milliseconds timeout) noexcept (std::is_nothrow_move_constructible_v<value_type>)
             {
                 using namespace std::chrono;
 
-                auto start = steady_clock::now();
+                const auto start = steady_clock::now();
 
                 for (;;)
                 {
                     
                     auto head = head_.load(std::memory_order_relaxed); 
-                    if (not is_empty(head) && head_.compare_exchange_strong(head, inc(head), std::memory_order_release))
+                    auto& slot = slots_[head & MASK];
+                    const auto sequence = static_cast<std::ptrdiff_t>(slot.sequence_.load(std::memory_order_acquire));
+                    if (sequence - static_cast<std::ptrdiff_t>(head + 1) == 0)
                     {
-                        return std::optional<value_type>(std::move(data_[head]));
+                        if (head_.compare_exchange_weak(head, head + 1, std::memory_order_acquire, std::memory_order_relaxed))
+                        {
+                            slot.sequence_.store(head + MASK + 1, std::memory_order_release); // empty slot indication
+                            return std::optional<value_type>(std::move(slot.data_));
+                        }
                     }
-
+                    
                     if (stop.test(std::memory_order_relaxed)) break;
                     if (duration_cast<milliseconds>(steady_clock::now() - start) > timeout) break;
 
-                    _mm_pause();
+                    std::this_thread::yield();
+
                 }
                 
                 return {};
             }
 
-            // Pop that rather invokes the given callable
+            // Pop that rather invokes the given callable 
             template <typename Func>
             requires std::invocable<Func, value_type>
             void pop(Func&& func, const std::atomic_flag& stop) noexcept (std::is_nothrow_move_constructible_v<value_type>)
             {
                 for (;;)
                 {
-                    
                     auto head = head_.load(std::memory_order_relaxed); 
-                    if (not is_empty(head) && head_.compare_exchange_strong(head, inc(head), std::memory_order_release))
+                    auto& slot = slots_[head & MASK];
+                    const auto sequence = static_cast<std::ptrdiff_t>(slot.sequence_.load(std::memory_order_acquire));
+                    if (sequence - static_cast<std::ptrdiff_t>(head + 1) == 0) // the slot is full: index + 1
                     {
-                        std::invoke(std::forward<Func>(func), std::move(data_[head]));
+                        if (head_.compare_exchange_weak(head, head + 1, std::memory_order_acquire, std::memory_order_relaxed))
+                        {
+                            slot.sequence_.store(head + MASK + 1, std::memory_order_release); // 0 - N/2N/.., 1 - N + 1/ 2N + 1/3N + 1, etc. indication of emptyy slot
+                            std::invoke(std::forward<Func>(func), std::move(slot.data_));
+                            return;   
+                        }
                     }
 
                     if (stop.test(std::memory_order_relaxed)) break;
 
-                    _mm_pause();
+                    std::this_thread::yield();
+
                 }
                 
             }
@@ -118,18 +150,28 @@ namespace utils::mpmc
                          
             template <typename U>
             requires std::convertible_to<U, value_type>
-            bool push(U&& u) noexcept (std::is_nothrow_constructible_v<U>)
+            void push(U&& u) noexcept (std::is_nothrow_constructible_v<U>)
             {
-                auto tail = tail_.load(std::memory_order_relaxed); // expected value - otherwise, another producer modifies it
-                while (is_full() || not tail_.compare_exchange_weak(tail, inc(tail), std::memory_order_release))
+                for (; ;)
                 {
-                    _mm_pause();
-                }
+                    auto tail = tail_.load(std::memory_order_relaxed); // expected value - otherwise, another producer modifies it
+                    auto& slot = slots_[tail & MASK];
+                    const auto sequence = static_cast<std::ptrdiff_t>(slot.sequence_.load(std::memory_order_acquire));
+                    if (sequence - static_cast<std::ptrdiff_t>(tail) == 0)
+                    {
+                        if (tail_.compare_exchange_weak(tail, tail + 1, std::memory_order_acquire, std::memory_order_relaxed))
+                        {
+                            slot.data_ = std::forward<U>(u);
+                            slot.sequence_.store(tail + 1, std::memory_order_release); // 0 -slot: 1, 1-slot: 2, etc.: indication of the full slot
+                            return;
+                        }
+                    }
 
-                data_[tail] = std::forward<U>(u);
+                    std::this_thread::yield();
+                }
                 
-                return true;
             }
+
 
             template <typename U>
             requires std::convertible_to<U, value_type>
@@ -137,70 +179,47 @@ namespace utils::mpmc
             {
                 using namespace std::chrono;
 
-                auto start = steady_clock::now();
+                const auto start = steady_clock::now();
 
                 for (;;)
                 {
                     auto tail = tail_.load(std::memory_order_relaxed);
-                    if (not is_full(tail) && tail_.compare_exchange_strong(tail, inc(tail), std::memory_order_release))
+                    auto& slot = slots_[tail & MASK];
+                    const auto sequence = static_cast<std::ptrdiff_t>(slot.sequence_.load(std::memory_order_acquire));
+                    if ( sequence - static_cast<std::ptrdiff_t>(tail) == 0)
                     {
-                        data_[tail] = std::forward<U>(u);
-                        return true;   
+                        if (tail_.compare_exchange_weak(tail, tail + 1, std::memory_order_acquire, std::memory_order_relaxed)) 
+                        {
+                            slot.data_ = std::forward<U>(u);
+                            slot.sequence_.store(tail + 1, std::memory_order_release);
+                            
+                            return true;
+                        }
                     }
 
                     if (duration_cast<milliseconds>(steady_clock::now() - start) > timeout) break;
 
-                    _mm_pause();
+                    std::this_thread::yield();
                 }
 
-                return false;
+                return false; // timeout expired - operation failed
                 
             }
 
 
-        private:
-
-            inline bool is_full(std::size_t tail) const 
-            {
-                const auto full = [tail, this] 
-                { 
-                    return inc(tail) == head_.load(std::memory_order_acquire); 
-                };
-
-                return full();    
-            }
-
-            inline bool is_full() const 
-            {
-                const auto tail = tail_.load(std::memory_order_relaxed);
-                return is_full(tail);
-            }
-
-            inline bool is_empty(size_t head) const 
-            {
-                const auto empty = [head, this] 
-                {
-                    return head == tail_.load(std::memory_order_acquire); 
-                };
-
-                return empty();
-            }
-
-            inline bool is_empty() const 
-            {
-                const auto head = head_.load(std::memory_order_relaxed);
-                return is_empty(head);
-            }
-
-            
         
-                       
         private:
             
+            struct Slot 
+            {
+                value_type data_;
+                std::atomic<std::size_t> sequence_;
+            };
+
             alignas(64) std::atomic<std::size_t> head_ {0};
             alignas(64) std::atomic<std::size_t> tail_ {0};
 
-            alignas(64) std::array<value_type, N> data_;
+            alignas(64) std::array<Slot, N> slots_;
     };
 }
 

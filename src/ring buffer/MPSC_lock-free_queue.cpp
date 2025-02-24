@@ -1,3 +1,10 @@
+/*
+* Author: Damir Ljubic
+* email: damirlj@yahoo.com
+* @2025
+* All rights reserved!
+*/
+
 #include <atomic>
 #include <array>
 #include <vector>
@@ -13,13 +20,10 @@
 #include <syncstream>
 #include <cassert>
 
-
-// <Compiler Explorer>: https://godbolt.org/z/8T4vqrWoE
-
 namespace utils::mpsc
 {
     template <std::size_t N>
-    constexpr bool is_power_of_2 = (N & (N-1)) == 0;
+    constexpr bool is_power_of_2 = (N > 0) && (N & (N-1)) == 0;
 
     /**
      * @brief Multiple-Producers Single-Consumer queue
@@ -32,6 +36,13 @@ namespace utils::mpsc
     requires is_power_of_2<N>
     class queue final
     {
+
+        static constexpr auto MASK = N - 1;
+        
+        inline std::size_t inc(std::size_t val)
+        {
+            return (val + 1) & MASK;
+        }
 
         public:
 
@@ -82,7 +93,10 @@ namespace utils::mpsc
             bool push(U&& u) noexcept (std::is_nothrow_constructible_v<U>)
             {
                 auto tail = tail_.load(std::memory_order_relaxed); // expected value - otherwise, another producer modifies it
-                while(is_full() || not tail_.compare_exchange_weak(tail, (tail + 1) & (N - 1), std::memory_order_release));
+                while(is_full(tail) || not tail_.compare_exchange_weak(tail, inc(tail), std::memory_order_acq_rel, std::memory_order_relaxed))
+                {
+                    std::this_thread::yield();    
+                }
                 
                 data_[tail] = std::forward<U>(u);
 
@@ -97,7 +111,7 @@ namespace utils::mpsc
 
                 auto start = steady_clock::now();
                 auto tail = tail_.load(std::memory_order_relaxed);
-                while (is_full() || not tail_.compare_exchange_weak(tail, (tail + 1) & (N - 1), std::memory_order_release))
+                while (is_full(tail) || not tail_.compare_exchange_weak(tail, inc(tail), std::memory_order_acq_rel, std::memory_order_relaxed))
                 {
                     if (duration_cast<milliseconds>(steady_clock::now() - start) > timeout) return false;    
                 }
@@ -110,15 +124,20 @@ namespace utils::mpsc
 
         private:
 
-            inline bool is_full() const 
+            inline bool is_full(std::size_t tail) const
             {
-                const auto full = [=, this] 
+                const auto full = [tail, this] 
                 { 
-                    const auto tail = tail_.load(std::memory_order_relaxed);
-                    return ((tail + 1) & (N - 1)) == head_.load(std::memory_order_acquire); 
+                    return ((tail + 1) & MASK) == head_.load(std::memory_order_acquire); 
                 };
 
                 return full();    
+            }
+            
+            inline bool is_full() const 
+            {
+                const auto tail = tail_.load(std::memory_order_relaxed);
+                return is_full(tail);
             }
 
             inline bool is_empty(size_t head) const 
@@ -190,10 +209,15 @@ void oss(Args&&...args)
 
 template <typename T, std::size_t N>
 requires utils::mpsc::is_power_of_2<N>
-void producer(std::shared_ptr<utils::mpsc::queue<T, N>> queue) {
+void producer(std::shared_ptr<utils::mpsc::queue<T, N>> queue) 
+{
+    using namespace std::chrono_literals;
+
     const auto tid = std::this_thread::get_id();
     oss(__func__, ": tid= ", tid);
     queue->push([tid]{oss(" <consumer>: job= ", tid);});
+
+    std::this_thread::sleep_for(1ms);
 }
 
 template <typename T, std::size_t N>
@@ -214,6 +238,8 @@ void consumer(std::shared_ptr<utils::mpsc::queue<T, N>> queue, const std::atomic
             auto job = queue->pop_wait(stop);
             if (job.has_value()) std::invoke(*job);
             else if (stop.test(std::memory_order_relaxed)) break;
+            
+            std::this_thread::yield();
 
         }catch(...)
         {
@@ -258,4 +284,3 @@ int main()
 
     return 0;
 }
-
