@@ -100,12 +100,12 @@ namespace utils::mpsc
                 for (;;)
                 {
                     auto tail = tail_.load(std::memory_order_relaxed); // expected value - otherwise, another producer modifies it
-                    if (not is_full(tail) && tail_.compare_exchange_weak(tail, inc(tail), std::memory_order_acq_rel, std::memory_order_relaxed))
+                    if (not is_full(tail) && tail_.compare_exchange_strong(tail, inc(tail), std::memory_order_acq_rel, std::memory_order_relaxed))
                     {
                         data_[tail] = std::forward<U>(u);
-                        break;  
+                        return;
                     }
-                    
+
                     std::this_thread::yield();
                 }
             }
@@ -121,7 +121,7 @@ namespace utils::mpsc
                 for (;;)
                 {
                     auto tail = tail_.load(std::memory_order_relaxed);
-                    if (not is_full(tail) && tail_.compare_exchange_weak(tail, inc(tail), std::memory_order_acq_rel, std::memory_order_relaxed))
+                    if (not is_full(tail) && tail_.compare_exchange_strong(tail, inc(tail), std::memory_order_acq_rel, std::memory_order_relaxed))
                     {
                         data_[tail] = std::forward<U>(u);
                         break;
