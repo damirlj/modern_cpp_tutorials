@@ -97,17 +97,10 @@ namespace utils::mpsc
             requires std::convertible_to<U, value_type>
             void push(U&& u) noexcept (std::is_nothrow_constructible_v<U>)
             {
-                for (;;)
-                {
-                    auto tail = tail_.load(std::memory_order_relaxed); // expected value - otherwise, another producer modifies it
-                    if (not is_full(tail) && tail_.compare_exchange_strong(tail, inc(tail), std::memory_order_acq_rel, std::memory_order_relaxed))
-                    {
-                        data_[tail] = std::forward<U>(u);
-                        return;
-                    }
-
-                    std::this_thread::yield();
-                }
+                auto tail = tail_.load(std::memory_order_relaxed); // expected value - otherwise, another producer modifies it
+                while (is_full() || not tail_.compare_exchange_weak(tail, inc(tail), std::memory_order_acq_rel, std::memory_order_relaxed));
+             
+                data_[tail] = std::forward<U>(u);    
             }
 
             template <typename U>
@@ -121,13 +114,14 @@ namespace utils::mpsc
                 for (;;)
                 {
                     auto tail = tail_.load(std::memory_order_relaxed);
-                    if (not is_full(tail) && tail_.compare_exchange_strong(tail, inc(tail), std::memory_order_acq_rel, std::memory_order_relaxed))
+                    if (not is_full(tail) && tail_.compare_exchange_weak(tail, inc(tail), std::memory_order_acq_rel, std::memory_order_relaxed))
                     {
                         data_[tail] = std::forward<U>(u);
                         break;
                     }
 
                     if (duration_cast<milliseconds>(steady_clock::now() - start) > timeout) return false;
+                    std::this_thread::yield();    
                 }
                 
                 return true;
@@ -197,6 +191,7 @@ namespace utils::mpsc
 
 
 
+
 // Unit-test
 
 // https://en.cppreference.com/w/cpp/error/exception_ptr
@@ -252,8 +247,6 @@ void consumer(std::shared_ptr<utils::mpsc::queue<T, N>> queue, const std::atomic
             if (job.has_value()) std::invoke(*job);
             else if (stop.test(std::memory_order_relaxed)) break;
             
-            std::this_thread::yield();
-
         }catch(...)
         {
             e = std::current_exception();
