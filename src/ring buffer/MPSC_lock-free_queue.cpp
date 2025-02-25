@@ -50,35 +50,40 @@ namespace utils::mpsc
             
             auto try_pop() -> std::optional<value_type>
             {
-                return pop([this](std::size_t head) { return not is_empty(head); });
+                return pop([this]() { return not is_empty(); });
             }
 
             auto pop_wait(const std::atomic_flag& stop) -> std::optional<value_type>
             {
-                return pop([&stop, this](std::size_t head) 
+                return pop([&stop, this]() 
                     {
-                        while (is_empty(head)) // wait until is non-empty, or stop is signaled
+                        while (is_empty()) // wait until is non-empty, or stop is signaled
                         {
                             if (stop.test(std::memory_order_relaxed)) return false;
+
                             std::this_thread::yield();
                         }
+
                         return true;
                     });
             }
 
             auto pop_wait_for(const std::atomic_flag& stop, std::chrono::milliseconds timeout) -> std::optional<value_type>
             {
-                return pop([&stop, timeout, this](std::size_t head) 
+                return pop([&stop, timeout, this]() 
                     {
                         using namespace std::chrono;
+
                         auto start = steady_clock::now();
 
-                        while (is_empty(head)) // wait until is non-empty, stop is signaled, or timeout expired
+                        while (is_empty()) // wait until is non-empty, stop is signaled, or timeout expired
                         {
                             if (stop.test(std::memory_order_relaxed)) return false;
                             if (duration_cast<milliseconds>(steady_clock::now() - start) > timeout) return false;
+                            
                             std::this_thread::yield();
                         }
+
                         return true;
                     });
             }
@@ -90,17 +95,19 @@ namespace utils::mpsc
                        
             template <typename U>
             requires std::convertible_to<U, value_type>
-            bool push(U&& u) noexcept (std::is_nothrow_constructible_v<U>)
+            void push(U&& u) noexcept (std::is_nothrow_constructible_v<U>)
             {
-                auto tail = tail_.load(std::memory_order_relaxed); // expected value - otherwise, another producer modifies it
-                while(is_full(tail) || not tail_.compare_exchange_weak(tail, inc(tail), std::memory_order_acq_rel, std::memory_order_relaxed))
+                for (;;)
                 {
-                    std::this_thread::yield();    
+                    auto tail = tail_.load(std::memory_order_relaxed); // expected value - otherwise, another producer modifies it
+                    if (not is_full(tail) && tail_.compare_exchange_weak(tail, inc(tail), std::memory_order_acq_rel, std::memory_order_relaxed))
+                    {
+                        data_[tail] = std::forward<U>(u);
+                        break;  
+                    }
+                    
+                    std::this_thread::yield();
                 }
-                
-                data_[tail] = std::forward<U>(u);
-
-                return true;
             }
 
             template <typename U>
@@ -110,14 +117,19 @@ namespace utils::mpsc
                 using namespace std::chrono;
 
                 auto start = steady_clock::now();
-                auto tail = tail_.load(std::memory_order_relaxed);
-                while (is_full(tail) || not tail_.compare_exchange_weak(tail, inc(tail), std::memory_order_acq_rel, std::memory_order_relaxed))
+
+                for (;;)
                 {
-                    if (duration_cast<milliseconds>(steady_clock::now() - start) > timeout) return false;    
+                    auto tail = tail_.load(std::memory_order_relaxed);
+                    if (not is_full(tail) && tail_.compare_exchange_weak(tail, inc(tail), std::memory_order_acq_rel, std::memory_order_relaxed))
+                    {
+                        data_[tail] = std::forward<U>(u);
+                        break;
+                    }
+
+                    if (duration_cast<milliseconds>(steady_clock::now() - start) > timeout) return false;
                 }
                 
-                data_[tail] = std::forward<U>(u);
-
                 return true;
             }
 
@@ -152,7 +164,7 @@ namespace utils::mpsc
 
             inline bool is_empty() const 
             {
-                const auto head = head_.load(std::memory_order_relaxed); // maintain by the single consumer only
+                const auto head = head_.load(std::memory_order_relaxed); // maintain by the single consumer
                 return is_empty(head);
             }
 
@@ -160,28 +172,29 @@ namespace utils::mpsc
         private:
 
             template <typename Func, typename...Args>
-            requires std::invocable<Func, std::size_t, Args...> && std::is_same_v<bool, std::invoke_result_t<Func, std::size_t, Args...>>
+            requires std::invocable<Func, Args...> && std::is_same_v<bool, std::invoke_result_t<Func, Args...>>
             inline std::optional<value_type> pop(Func&& func, Args&&...args) noexcept (std::is_nothrow_move_constructible_v<value_type>)
             {
+                if (not std::invoke(std::forward<Func>(func), std::forward<Args>(args)...)) return {};
+
                 const auto head = head_.load(std::memory_order_relaxed); 
-                
-                if (not std::invoke(std::forward<Func>(func), head, std::forward<Args>(args)...)) return {};
-
                 auto data = std::optional<value_type>(std::move(data_[head]));
-                // data_[head] = {}; // default-constructible
-
-                head_.store((head + 1) & (N - 1), std::memory_order_release);
+                
+                head_.store((head + 1) & MASK, std::memory_order_release);
                 
                 return data;
             }
 
                        
         private:
-            alignas(64) std::array<T, N> data_;
+            
             alignas(64) std::atomic<std::size_t> head_ {0};
             alignas(64) std::atomic<std::size_t> tail_ {0};
+
+            alignas(64) std::array<T, N> data_;
     };
 }
+
 
 
 // Unit-test
