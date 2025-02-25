@@ -13,6 +13,7 @@
 #include <functional>
 #include <thread>
 #include <chrono>
+#include <numeric>
 
 //#include <immintrin.h> // _mm_pause
 
@@ -28,7 +29,7 @@ namespace utils::mpmc
     constexpr bool is_power_of_2 = (N > 0) && (N & (N-1)) == 0;
 
     /**
-     * @brief Multiple-Producers Multiple-Consumers queue
+     * @brief Multiple-Producers Multiple-Consumers bounded queue
      * Lock-free implementation
      * 
      * Proper handling the dequeuing sequnece in multi-consumers environment (FIFO)
@@ -53,15 +54,12 @@ namespace utils::mpmc
 
         public:
 
-            queue() noexcept
-            {
-                init();        
-            }
+            queue() noexcept { init(); }
 
             using value_type = std::remove_cvref_t<T>;
 
 
-            // Pop that returns optionally the value - or brakes on the stop being signaled       
+            // Pop that returns optionally the value - or brakes on the stop being signaled
             std::optional<value_type> pop(const std::atomic_flag& stop) noexcept (std::is_nothrow_move_constructible_v<value_type>)
             {
                 for (;;)
@@ -71,10 +69,12 @@ namespace utils::mpmc
                     const auto sequence = static_cast<std::ptrdiff_t>(slot.sequence_.load(std::memory_order_acquire));
                     if (sequence - static_cast<std::ptrdiff_t>(head + 1) == 0)
                     {
-                        if (head_.compare_exchange_weak(head, head + 1, std::memory_order_acquire, std::memory_order_relaxed))
+                        if (head_.compare_exchange_weak(head, head + 1, std::memory_order_acq_rel, std::memory_order_relaxed))
                         {
+                            // It's important to read the data first - before setting the slot status
+                            auto data = std::optional<value_type>(std::move(slot.data_));
                             slot.sequence_.store(head + MASK + 1, std::memory_order_release); // empty slot indication
-                            return std::optional<value_type>(std::move(slot.data_));
+                            return data;
                         }
                     }
                     
@@ -102,10 +102,11 @@ namespace utils::mpmc
                     const auto sequence = static_cast<std::ptrdiff_t>(slot.sequence_.load(std::memory_order_acquire));
                     if (sequence - static_cast<std::ptrdiff_t>(head + 1) == 0)
                     {
-                        if (head_.compare_exchange_weak(head, head + 1, std::memory_order_acquire, std::memory_order_relaxed))
+                        if (head_.compare_exchange_weak(head, head + 1, std::memory_order_acq_rel, std::memory_order_relaxed))
                         {
+                            auto data = std::optional<value_type>(std::move(slot.data_));
                             slot.sequence_.store(head + MASK + 1, std::memory_order_release); // empty slot indication
-                            return std::optional<value_type>(std::move(slot.data_));
+                            return data;
                         }
                     }
                     
@@ -131,10 +132,10 @@ namespace utils::mpmc
                     const auto sequence = static_cast<std::ptrdiff_t>(slot.sequence_.load(std::memory_order_acquire));
                     if (sequence - static_cast<std::ptrdiff_t>(head + 1) == 0) // the slot is full: index + 1
                     {
-                        if (head_.compare_exchange_weak(head, head + 1, std::memory_order_acquire, std::memory_order_relaxed))
+                        if (head_.compare_exchange_weak(head, head + 1, std::memory_order_acq_rel, std::memory_order_relaxed))
                         {
-                            slot.sequence_.store(head + MASK + 1, std::memory_order_release); // 0 - N/2N/.., 1 - N + 1/ 2N + 1/3N + 1, etc. indication of emptyy slot
                             std::invoke(std::forward<Func>(func), std::move(slot.data_));
+                            slot.sequence_.store(head + MASK + 1, std::memory_order_release); // 0 - N/2N/.., 1 - N + 1/ 2N + 1/3N + 1, etc. indication of emptyy slot
                             return;   
                         }
                     }
@@ -159,7 +160,7 @@ namespace utils::mpmc
                     const auto sequence = static_cast<std::ptrdiff_t>(slot.sequence_.load(std::memory_order_acquire));
                     if (sequence - static_cast<std::ptrdiff_t>(tail) == 0)
                     {
-                        if (tail_.compare_exchange_weak(tail, tail + 1, std::memory_order_acquire, std::memory_order_relaxed))
+                        if (tail_.compare_exchange_weak(tail, tail + 1, std::memory_order_acq_rel, std::memory_order_relaxed))
                         {
                             slot.data_ = std::forward<U>(u);
                             slot.sequence_.store(tail + 1, std::memory_order_release); // 0 -slot: 1, 1-slot: 2, etc.: indication of the full slot
@@ -188,7 +189,7 @@ namespace utils::mpmc
                     const auto sequence = static_cast<std::ptrdiff_t>(slot.sequence_.load(std::memory_order_acquire));
                     if ( sequence - static_cast<std::ptrdiff_t>(tail) == 0)
                     {
-                        if (tail_.compare_exchange_weak(tail, tail + 1, std::memory_order_acquire, std::memory_order_relaxed)) 
+                        if (tail_.compare_exchange_weak(tail, tail + 1, std::memory_order_acq_rel, std::memory_order_relaxed)) 
                         {
                             slot.data_ = std::forward<U>(u);
                             slot.sequence_.store(tail + 1, std::memory_order_release);
@@ -203,7 +204,6 @@ namespace utils::mpmc
                 }
 
                 return false; // timeout expired - operation failed
-                
             }
 
 
@@ -212,8 +212,8 @@ namespace utils::mpmc
             
             struct Slot 
             {
-                value_type data_;
                 std::atomic<std::size_t> sequence_;
+                value_type data_;
             };
 
             alignas(64) std::atomic<std::size_t> head_ {0};
@@ -249,10 +249,15 @@ void oss(Args&&...args)
 
 template <typename T, std::size_t N>
 requires utils::mpmc::is_power_of_2<N>
-void producer(std::shared_ptr<utils::mpmc::queue<T, N>> queue) {
+void producer(std::shared_ptr<utils::mpmc::queue<T, N>> queue) 
+{
+    using namespace std::chrono_literals;
+
     const auto tid = std::this_thread::get_id();
     oss(__func__, ": tid= ", tid);
     queue->push([tid]{oss(" <consumer>: job= ", tid);});
+    
+    std::this_thread::sleep_for(1ms);
 }
 
 template <typename T, std::size_t N>
@@ -292,8 +297,7 @@ int main()
 {
     std::atomic_flag stop {false};
 
-    // set the low queue depth - less than producer threads that concurently access it: for rigid test
-    using job_queue = utils::mpmc::queue<std::function<void()>, 8>; 
+    using job_queue = utils::mpmc::queue<std::function<void()>, 8>; // set the low queue depth - less than producer threads that concurently access it: for rigid test
     auto q = std::make_shared<job_queue>();
   
 
@@ -301,7 +305,8 @@ int main()
     constexpr int Consumers = 3;
     std::vector<std::thread> t_consumers;
     t_consumers.reserve(Consumers);
-    for (int i = 0; i < Consumers; ++i) {
+    for (int i = 0; i < Consumers; ++i) 
+    {
         t_consumers.emplace_back([q, &stop]{consumer(q, stop);});
     }
 
@@ -322,6 +327,8 @@ int main()
 
     for (auto& consumers : t_consumers) consumers.join();
 
+  
     return 0;
 }
+
 

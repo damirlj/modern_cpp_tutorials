@@ -26,8 +26,8 @@ namespace utils::mpsc
     constexpr bool is_power_of_2 = (N > 0) && (N & (N-1)) == 0;
 
     /**
-     * @brief Multiple-Producers Single-Consumer queue
-     * This relax the requirements on the interface of this thread-safe queue
+     * @brief Multiple-Producers Single-Consumer bounded queue
+     * This (single consumer) relaxes the requirements on the interface of this thread-safe queue
      * implemented in the lock-free manner
      *
      * Designed to be used with Active Object concurrent pattern
@@ -60,7 +60,6 @@ namespace utils::mpsc
                         while (is_empty()) // wait until is non-empty, or stop is signaled
                         {
                             if (stop.test(std::memory_order_relaxed)) return false;
-
                             std::this_thread::yield();
                         }
 
@@ -100,7 +99,7 @@ namespace utils::mpsc
                 auto tail = tail_.load(std::memory_order_relaxed); // expected value - otherwise, another producer modifies it
                 while (is_full() || not tail_.compare_exchange_weak(tail, inc(tail), std::memory_order_acq_rel, std::memory_order_relaxed));
              
-                data_[tail] = std::forward<U>(u);    
+                data_[tail] = std::forward<U>(u);
             }
 
             template <typename U>
@@ -121,7 +120,7 @@ namespace utils::mpsc
                     }
 
                     if (duration_cast<milliseconds>(steady_clock::now() - start) > timeout) return false;
-                    std::this_thread::yield();    
+                    std::this_thread::yield();
                 }
                 
                 return true;
@@ -171,7 +170,7 @@ namespace utils::mpsc
             {
                 if (not std::invoke(std::forward<Func>(func), std::forward<Args>(args)...)) return {};
 
-                const auto head = head_.load(std::memory_order_relaxed); 
+                const auto head = head_.load(std::memory_order_relaxed);
                 auto data = std::optional<value_type>(std::move(data_[head]));
                 
                 head_.store((head + 1) & MASK, std::memory_order_release);
