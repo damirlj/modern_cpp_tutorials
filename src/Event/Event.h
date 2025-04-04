@@ -86,11 +86,14 @@ namespace utils
         using notify_f = void (std::condition_variable::*)(void);
         void setEvent(notify_f notifier)
         {
+            std::lock_guard lock{m_lock};
+            m_predicate = true;
+            
+            // There is at least one consumer-thread - waiting on the event to be signaled
+            if (not m_waitingThreads.empty())
             {
-                std::lock_guard lock{m_lock};
-                m_predicate = true;
+                std::invoke(notifier, m_event);
             }
-            std::invoke(notifier, m_event);
         }
 
       private:

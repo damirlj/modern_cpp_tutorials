@@ -13,7 +13,7 @@ Event::~Event() = default;
 
 namespace
 {
-    void updateWaitingThreads(Event::waiting_threads_t& waitingThreads)
+    inline void updateWaitingThreads(Event::waiting_threads_t& waitingThreads)
     {
         waitingThreads.erase(
             std::remove(waitingThreads.begin(), waitingThreads.end(), std::this_thread::get_id()),
@@ -27,7 +27,7 @@ Event::event_wait_t Event::wait_for(std::chrono::milliseconds timeout)
 
     event_wait_t outcome = event_wait_t::signaled;
 
-    if (!m_predicate)
+    if (not m_predicate)
     {
         m_waitingThreads.push_back(std::this_thread::get_id());
 
@@ -35,10 +35,10 @@ Event::event_wait_t Event::wait_for(std::chrono::milliseconds timeout)
         outcome = signaled ? event_wait_t::signaled : event_wait_t::timeout;
 
         updateWaitingThreads(m_waitingThreads);
-
-        // Auto reset
-        if (m_autoReset && m_waitingThreads.empty()) m_predicate = false;
     }
+     
+     // Auto reset
+     if (m_autoReset && m_waitingThreads.empty()) m_predicate = false;
 
     return outcome;
 }
@@ -54,10 +54,10 @@ void Event::wait()
         m_event.wait(lock, [this] { return m_predicate; });
 
         updateWaitingThreads(m_waitingThreads);
-
-        // Auto reset
-        if (m_autoReset && m_waitingThreads.empty()) m_predicate = false;
     }
+    
+    // Auto reset
+    if (m_autoReset && m_waitingThreads.empty()) m_predicate = false;
 }
 
 void Event::notify()

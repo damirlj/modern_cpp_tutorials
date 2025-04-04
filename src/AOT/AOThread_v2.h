@@ -151,12 +151,13 @@ namespace utils::aot
                 using result_t = invoke_result_t<Func>;
                 using task_t = packaged_task<result_t()>;
 
-                task_t task {FunctionWrapper(move(func))};
+                auto task = task_t{std::forward<Func>(func)};
                 auto result = task.get_future();
 
                 {
                     lock_guard<std::mutex> lock {m_lock};
-                    m_jobs.push(move(task));
+                    // Call explicitly the task - so that the std::future is properly set
+                    m_jobs.push(FunctionWrapper([task = std::move(task)]() mutable { task(); }));
                 }
 
                 m_condition.notify_one();
@@ -173,12 +174,14 @@ namespace utils::aot
                 using task_t = packaged_task<result_t()>;
 
 
-                task_t task { bind(std::forward<Func>(func), std::forward<Args>(args)...)}; // implicit conversion to FunctionWrapper
-                auto result =  task.get_future();
+                // Bind the data - additional arguments with the job: to satisfy the task (task_t) signature
+                auto task = task_t{std::bind(std::forward<Func>(func), std::forward<Args>(args)...)};
+                auto result = task.get_future();
 
                 {
                     lock_guard<mutex> lock {m_lock};
-                    m_jobs.push(move(task));
+                    // Call explicitly the task - so that the std::future is properly set
+                    m_jobs.push(FunctionWrapper{[task = std::move(task)]() mutable { task(); }});
                 }
 
                 m_condition.notify_one();
