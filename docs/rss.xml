@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+  <channel>
+    <title>Modern C++ Tutorials - Docs Updates</title>
+    <link>https://github.com/damirlj/modern_cpp_tutorials</link>
+    <description>New articles and updates in the docs/ folder</description>
+    <!-- Items go here -->
+  </channel>
+</rss>
