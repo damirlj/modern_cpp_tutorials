@@ -36,26 +36,25 @@ jobs:
         if [ ! -f "$RSS_FILE" ]; then
           echo "Creating new rss.xml"
           cat <<EOF > $RSS_FILE
-<?xml version="1.0" encoding="UTF-8" ?>
-<rss version="2.0">
-  <channel>
-    <title>Modern C++ Tutorials - Docs Updates</title>
-    <link>https://github.com/${{ github.repository }}</link>
-    <description>New articles and updates in the docs/ folder</description>
-  </channel>
-</rss>
-EOF
+          <?xml version="1.0" encoding="UTF-8" ?>
+          <rss version="2.0">
+            <channel>
+              <title>Modern C++ Tutorials - Docs Updates</title>
+              <link>https://github.com/${{ github.repository }}</link>
+              <description>New articles and updates in the docs/ folder</description>
+            </channel>
+          </rss>
         fi
 
         # Insert new item before </channel>
         TMP_FILE=$(mktemp)
         sed "/<\/channel>/ i\
-  <item>\n\
-    <title>$COMMIT_MSG</title>\n\
-    <link>$COMMIT_URL</link>\n\
-    <guid>$COMMIT_URL</guid>\n\
-    <pubDate>$COMMIT_DATE</pubDate>\n\
-  </item>" "$RSS_FILE" > "$TMP_FILE" && mv "$TMP_FILE" "$RSS_FILE"
+        <item>\n\
+          <title>$COMMIT_MSG</title>\n\
+          <link>$COMMIT_URL</link>\n\
+          <guid>$COMMIT_URL</guid>\n\
+          <pubDate>$COMMIT_DATE</pubDate>\n\
+        </item>" "$RSS_FILE" > "$TMP_FILE" && mv "$TMP_FILE" "$RSS_FILE"
 
     - name: Commit and push rss.xml
       run: |
