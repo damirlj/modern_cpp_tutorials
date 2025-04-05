@@ -9,20 +9,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
     - name: Checkout repo
       uses: actions/checkout@v4
-
+      
     - name: Set up Python 3
       uses: actions/setup-python@v5
       with:
-        python-version: 3.x
-
+        python-version: '3.x'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
     - name: Generate RSS feed from PDFs
       run: |
         python generate_rss.py
-
+        
     - name: Commit and push updated rss.xml
       run: |
         git config user.name "github-actions[bot]"
@@ -30,3 +35,4 @@ jobs:
         git add docs/rss.xml
         git commit -m "Update RSS feed with new article" || echo "No changes to commit"
         git push
+        
