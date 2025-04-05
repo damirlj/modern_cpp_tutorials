@@ -1,50 +1,53 @@
 import os
-import datetime
+import xml.etree.ElementTree as ET
+from datetime import datetime
 
-DOCS_DIR = "docs"
-RSS_FILE = os.path.join(DOCS_DIR, "rss.xml")
-BASE_URL = "https://damirlj.github.io/modern_cpp_tutorials/docs"
+# Path to your docs folder
+docs_folder = "docs"
 
-header = f"""<?xml version="1.0" encoding="UTF-8" ?>
-<rss version="2.0">
-<channel>
-  <title>Modern C++ Tutorials</title>
-  <link>{BASE_URL}/</link>
-  <description>Latest articles in Modern C++ Tutorials</description>
-  <lastBuildDate>{datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S +0000')}</lastBuildDate>
-"""
+# Path to your RSS file
+rss_file = os.path.join(docs_folder, "rss.xml")
 
-# Collecting all PDF files in the docs folder, ordered by date
-items = []
-for file in sorted(os.listdir(DOCS_DIR), reverse=True):
-    if file.endswith(".pdf"):
-        title = file.replace("_", " ").replace(".pdf", "").title()
-        link = f"{BASE_URL}/{file}"
-        pub_date = datetime.datetime.utcfromtimestamp(os.path.getmtime(os.path.join(DOCS_DIR, file))).strftime('%a, %d %b %Y %H:%M:%S +0000')
-        items.append(f"""
-  <item>
-    <title>{title}</title>
-    <link>{link}</link>
-    <guid>{link}</guid>
-    <pubDate>{pub_date}</pubDate>
-  </item>""")
+# Get a list of all PDF files in docs and its subdirectories
+pdf_files = []
+for root, dirs, files in os.walk(docs_folder):
+    for file in files:
+        if file.endswith(".pdf"):
+            pdf_files.append(os.path.join(root, file))
 
-footer = """
-</channel>
-</rss>
-"""
-
-# If rss.xml exists, update it; else create a new one
-if os.path.exists(RSS_FILE):
-    with open(RSS_FILE, "r", encoding="utf-8") as f:
-        content = f.read()
-    # Remove the old <channel> content before adding new items
-    new_content = content.split("</channel>")[0] + "</channel>" + footer
-    with open(RSS_FILE, "w", encoding="utf-8") as f:
-        f.write(new_content)
+# Create or load RSS XML
+if os.path.exists(rss_file):
+    tree = ET.parse(rss_file)
+    root = tree.getroot()
 else:
-    # If RSS file doesn't exist, create it from scratch
-    with open(RSS_FILE, "w", encoding="utf-8") as f:
-        f.write(header + "\n".join(items) + footer)
+    root = ET.Element("rss", version="2.0")
+    channel = ET.SubElement(root, "channel")
+    ET.SubElement(channel, "title").text = "Modern C++ Tutorials - Docs Updates"
+    ET.SubElement(channel, "link").text = "https://github.com/damirlj/modern_cpp_tutorials"
+    ET.SubElement(channel, "description").text = "New articles and updates in the docs/ folder"
 
-print("✅ RSS feed updated for PDFs!")
+# Get current date for publishing
+current_date = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
+
+# Iterate through each PDF file found
+for pdf in pdf_files:
+    # Convert the full file path to a relative URL for GitHub
+    relative_path = os.path.relpath(pdf, docs_folder)
+    commit_url = f"https://github.com/damirlj/modern_cpp_tutorials/blob/main/{relative_path}"
+
+    # Create a new RSS item for each PDF
+    item = ET.Element("item")
+    ET.SubElement(item, "title").text = relative_path  # Use relative path as title
+    ET.SubElement(item, "link").text = commit_url
+    ET.SubElement(item, "guid").text = commit_url
+    ET.SubElement(item, "pubDate").text = current_date
+
+    # Append the item to the channel
+    channel = root.find("channel")
+    channel.append(item)
+
+# Save the updated RSS feed
+tree = ET.ElementTree(root)
+tree.write(rss_file, encoding="UTF-8", xml_declaration=True)
+
+print(f"Generated RSS feed with {len(pdf_files)} articles.")
