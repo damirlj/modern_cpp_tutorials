@@ -3,10 +3,8 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 
 # Path to your docs folder
-docs_folder = "docs"
-
-# Path to your RSS file
-rss_file = os.path.join(docs_folder, "rss.xml")
+docs_folder = 'docs'
+rss_file = 'docs/rss.xml'
 
 # Get a list of all PDF files in docs and its subdirectories
 pdf_files = []
@@ -14,6 +12,8 @@ for root, dirs, files in os.walk(docs_folder):
     for file in files:
         if file.endswith(".pdf"):
             pdf_files.append(os.path.join(root, file))
+
+print(f"Found {len(pdf_files)} PDFs in the 'docs' folder.")
 
 # Create or load RSS XML
 if os.path.exists(rss_file):
