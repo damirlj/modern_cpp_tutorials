@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'docs/**'
+      - 'docs/**/*.pdf' # Only trigger on PDF changes in docs/
 
 jobs:
   build:
