@@ -14,52 +14,19 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v4
 
-    - name: Set up Python
+    - name: Set up Python 3
       uses: actions/setup-python@v5
       with:
-        python-version: 3.11
+        python-version: 3.x
 
-    - name: Generate RSS item
+    - name: Generate RSS feed from PDFs
       run: |
-        mkdir -p docs
-        RSS_FILE=docs/rss.xml
+        python generate_rss.py
 
-        echo "Generating RSS item..."
-
-        # Extract last commit info
-        COMMIT_HASH=$(git log -1 --format=%H)
-        COMMIT_MSG=$(git log -1 --format=%s)
-        COMMIT_DATE=$(git log -1 --format=%cI)
-        COMMIT_URL="https://github.com/${{ github.repository }}/commit/$COMMIT_HASH"
-
-        # Check if rss.xml exists
-        if [ ! -f "$RSS_FILE" ]; then
-          echo "Creating new rss.xml"
-          cat <<EOF > $RSS_FILE
-          <?xml version="1.0" encoding="UTF-8" ?>
-          <rss version="2.0">
-            <channel>
-              <title>Modern C++ Tutorials - Docs Updates</title>
-              <link>https://github.com/${{ github.repository }}</link>
-              <description>New articles and updates in the docs/ folder</description>
-            </channel>
-          </rss>
-        fi
-
-        # Insert new item before </channel>
-        TMP_FILE=$(mktemp)
-        sed "/<\/channel>/ i\
-        <item>\n\
-          <title>$COMMIT_MSG</title>\n\
-          <link>$COMMIT_URL</link>\n\
-          <guid>$COMMIT_URL</guid>\n\
-          <pubDate>$COMMIT_DATE</pubDate>\n\
-        </item>" "$RSS_FILE" > "$TMP_FILE" && mv "$TMP_FILE" "$RSS_FILE"
-
-    - name: Commit and push rss.xml
+    - name: Commit and push updated rss.xml
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git add docs/rss.xml
-        git commit -m "Update RSS feed for docs/ changes" || echo "No changes to commit"
+        git commit -m "Update RSS feed with new article" || echo "No changes to commit"
         git push
