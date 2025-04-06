@@ -1,0 +1,209 @@
+<?xml version="1.0" ?>
+<rss version="2.0">
+  <channel>
+    <item>
+      <title>C++20\Asynchronous programming.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/C++20\Asynchronous programming.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/C++20\Asynchronous programming.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>C++20\Concepts.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/C++20\Concepts.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/C++20\Concepts.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>C++20\Coroutines - part 2.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/C++20\Coroutines - part 2.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/C++20\Coroutines - part 2.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>C++20\Coroutines.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/C++20\Coroutines.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/C++20\Coroutines.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>C++20\Coroutines__producer-consumer.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/C++20\Coroutines__producer-consumer.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/C++20\Coroutines__producer-consumer.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>C++20\Locking policy.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/C++20\Locking policy.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/C++20\Locking policy.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>C++20\Ranges.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/C++20\Ranges.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/C++20\Ranges.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>android\JNI Interface.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/android\JNI Interface.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/android\JNI Interface.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>android\Kotlin\Kotlin - builder pattern.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/android\Kotlin\Kotlin - builder pattern.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/android\Kotlin\Kotlin - builder pattern.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>android\Kotlin\Kotlin - fold expressions.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/android\Kotlin\Kotlin - fold expressions.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/android\Kotlin\Kotlin - fold expressions.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>android\Kotlin\Kotlin - functional programming.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/android\Kotlin\Kotlin - functional programming.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/android\Kotlin\Kotlin - functional programming.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>android\RxAndroid.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/android\RxAndroid.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/android\RxAndroid.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>android\Thread__Attributes.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/android\Thread__Attributes.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/android\Thread__Attributes.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>basics\ABI - overview.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\ABI - overview.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\ABI - overview.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>basics\Arrays.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\Arrays.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\Arrays.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>basics\Bits.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\Bits.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\Bits.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>basics\Callables__C++_vs_Java.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\Callables__C++_vs_Java.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\Callables__C++_vs_Java.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>basics\Enums.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\Enums.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\Enums.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>basics\Invariant, covariant and contravariant.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\Invariant, covariant and contravariant.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\Invariant, covariant and contravariant.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>basics\Range-based for loop.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\Range-based for loop.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\Range-based for loop.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>basics\Strings.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\Strings.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\Strings.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>basics\vtable#2.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\vtable#2.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\vtable#2.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>basics\vtable.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\vtable.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/basics\vtable.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>desing patterns\Bridge design pattern.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/desing patterns\Bridge design pattern.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/desing patterns\Bridge design pattern.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>desing patterns\Builder.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/desing patterns\Builder.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/desing patterns\Builder.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>desing patterns\Expression templates.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/desing patterns\Expression templates.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/desing patterns\Expression templates.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>desing patterns\Factory method.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/desing patterns\Factory method.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/desing patterns\Factory method.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>desing patterns\Observer.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/desing patterns\Observer.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/desing patterns\Observer.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>desing patterns\Singleton.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/desing patterns\Singleton.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/desing patterns\Singleton.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>desing patterns\Visitor.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/desing patterns\Visitor.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/desing patterns\Visitor.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>memory\Local allocator.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/memory\Local allocator.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/memory\Local allocator.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>memory\Lock-free programming, part 1.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/memory\Lock-free programming, part 1.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/memory\Lock-free programming, part 1.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>memory\Lock-free_programming__MPSC_queue.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/memory\Lock-free_programming__MPSC_queue.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/memory\Lock-free_programming__MPSC_queue.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+    <item>
+      <title>memory\Memory alignment.pdf</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/memory\Memory alignment.pdf</link>
+      <guid>https://github.com/damirlj/modern_cpp_tutorials/blob/main/memory\Memory alignment.pdf</guid>
+      <pubDate>Sun, 06 Apr 2025 12:32:24 GMT</pubDate>
+    </item>
+  </channel>
+</rss>
