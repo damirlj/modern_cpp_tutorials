@@ -11,14 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+    # Step 1: Checkout the repository
     - name: Checkout repo
       uses: actions/checkout@v4
 
-    - name: Check out files
+    # Step 2: Wait for a short time to ensure the PDF has been fully committed
+    - name: Wait for file to be committed
       run: |
-        ls -al docs/
-        cat docs/rss.xml # Print the contents of rss.xml before script runs
-      
+        echo "Waiting for the PDF to be fully committed..."
+        sleep 10  # Wait for 10 seconds to ensure the push has been reflected in the repo
+
+    # Step 3: Generate the RSS feed with the updated PDF
     - name: Set up Python 3
       uses: actions/setup-python@v5
       with:
@@ -27,15 +30,12 @@ jobs:
     - name: Generate RSS feed from PDFs
       run: |
         python generate_rss.py
-
-    - name: Check if rss.xml is modified
-      run: |
-        git diff docs/rss.xml # Show if the file has changed
-
+        
+    # Step 4: Commit and push the updated RSS feed
     - name: Commit and push updated rss.xml
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git add docs/rss.xml
-        git commit -m "Update RSS feed with new article" || echo "No changes to commit"
+        git commit -m "Update RSS feed with new (modified) article" || echo "No changes to commit"
         git push
