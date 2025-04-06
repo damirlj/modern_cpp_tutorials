@@ -6,7 +6,12 @@ from datetime import datetime
 # Define the RSS file and folder containing articles
 docs_folder = "docs"
 rss_file = os.path.join(docs_folder, "rss.xml")  # Adjust path to rss.xml
+
+# Use local time instead of GMT
+# current_date = datetime.now().strftime("%a, %d %b %Y %H:%M:%S %z")  # Local time with timezone offset
+# Get the current timestamp in GMT
 current_date = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
+
 
 def create_empty_rss_file(file_path):
     """
@@ -35,6 +40,7 @@ def is_file_updated(file_path, existing_pub_date):
     if updated:
         print(f"File {file_path} has been updated (mod_time: {file_mod_time}, existing_time: {existing_time})")
     return updated
+
 
 def write_rss_feed(file_path, tree, channel):
     """
@@ -99,10 +105,10 @@ changes_made = False
 
 # Process each PDF file
 for pdf in sorted(pdf_files):
-    relative_path = os.path.relpath(pdf, docs_folder)
+    relative_path = os.path.relpath(pdf, start=docs_folder)  # This will include docs/ and subfolders
     relative_path = relative_path.replace(os.sep, "/")  # Normalize to URL format
-    link = f"https://github.com/damirlj/modern_cpp_tutorials/blob/main/{relative_path}"
-    
+    link = f"https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/{relative_path}"
+
     # Check if the item already exists
     if link in existing_items:
         item = existing_items[link]
