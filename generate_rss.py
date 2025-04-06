@@ -1,7 +1,9 @@
 import os
+import subprocess
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from datetime import datetime
+
 
 # Define the RSS file and folder containing articles
 docs_folder = "docs"
@@ -12,6 +14,17 @@ rss_file = os.path.join(docs_folder, "rss.xml")  # Adjust path to rss.xml
 # Get the current timestamp in GMT
 current_date = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
 
+def get_git_last_modified_time(file_path):
+    try:
+        # Get the last commit timestamp in UTC for the file
+        output = subprocess.check_output(
+            ["git", "log", "-1", "--format=%ct", "--", file_path],
+            text=True
+        ).strip()
+        return int(output)  # UNIX timestamp
+    except Exception as e:
+        print(f"Failed to get git modified time for {file_path}: {e}")
+        return 0
 
 def create_empty_rss_file(file_path):
     """
@@ -34,11 +47,12 @@ def is_file_updated(file_path, existing_pub_date):
     :param existing_pub_date: Existing publication date in RSS feed.
     :return: True if the file has been updated, False otherwise.
     """
-    file_mod_time = os.path.getmtime(file_path)
+    # file_mod_time = os.path.getmtime(file_path)
+    git_mod_time = get_git_last_modified_time(file_path)
     existing_time = datetime.strptime(existing_pub_date, "%a, %d %b %Y %H:%M:%S GMT").timestamp()
-    updated = file_mod_time > existing_time
+    updated = git_mod_time > existing_time
     if updated:
-        print(f"File {file_path} has been updated (mod_time: {file_mod_time}, existing_time: {existing_time})")
+        print(f"File {file_path} has been updated (mod_time: {git_mod_time}, existing_time: {existing_time})")
     return updated
 
 
