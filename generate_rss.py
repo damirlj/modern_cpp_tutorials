@@ -79,6 +79,15 @@ for pdf in sorted(pdf_files):
     # Add the item to the channel
     channel.append(item)
 
+# Sort items in descending order by pubDate (newest first)
+items = channel.findall("item")
+sorted_items = sorted(items, key=lambda x: datetime.strptime(x.find("pubDate").text, "%a, %d %b %Y %H:%M:%S GMT"), reverse=True)
+
+# Clear existing items and add the sorted items
+channel.clear()
+for item in sorted_items:
+    channel.append(item)
+
 # Save the updated RSS feed
 if changes_made:
     tree.write(rss_file, encoding="utf-8", xml_declaration=True)
