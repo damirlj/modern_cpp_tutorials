@@ -78,8 +78,11 @@ try:
     root = tree.getroot()
     channel = root.find("channel")
     existing_items = {
-        item.find("link").text: item for item in channel.findall("item")
+        item.find("link").text: item 
+        for item in channel.findall("item")
     }
+    if not existing_items:
+        print("The existing_items dictionary is empty.")
 except ET.ParseError:
     print("Error parsing the existing RSS file. The file might be corrupted.")
     exit(1)
@@ -97,8 +100,9 @@ changes_made = False
 # Process each PDF file
 for pdf in sorted(pdf_files):
     relative_path = os.path.relpath(pdf, docs_folder)
+    relative_path = relative_path.replace(os.sep, "/")  # Normalize to URL format
     link = f"https://github.com/damirlj/modern_cpp_tutorials/blob/main/{relative_path}"
-
+    
     # Check if the item already exists
     if link in existing_items:
         item = existing_items[link]
