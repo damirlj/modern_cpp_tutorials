@@ -1,6 +1,6 @@
 import os
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
+from datetime import datetime
 from email.utils import parsedate_to_datetime
 
 # Path to your docs folder
@@ -28,45 +28,49 @@ else:
     ET.SubElement(channel, "link").text = "https://github.com/damirlj/modern_cpp_tutorials"
     ET.SubElement(channel, "description").text = "New articles and updates in the docs/ folder"
 
-# Create a dictionary of existing items by GUID (commit URL)
-existing_items = {item.find("guid").text: item for item in channel.findall("item")}
+# Map from GUID to <item> for quick lookup
+existing_items = {}
+for item in channel.findall("item"):
+    guid = item.find("guid").text if item.find("guid") is not None else None
+    if guid:
+        existing_items[guid] = item
 
-# Get current UTC date with tzinfo
-current_date = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
+# Track updated list of items
+new_items = []
 
-# Add or update items
+# Generate items from current PDF list
 for pdf in pdf_files:
     relative_path = os.path.relpath(pdf, docs_folder)
     commit_url = f"https://github.com/damirlj/modern_cpp_tutorials/blob/main/{relative_path}"
 
-    # If item exists, update pubDate; otherwise, create new
+    # If this article already exists, preserve pubDate
     if commit_url in existing_items:
-        existing_items[commit_url].find("pubDate").text = current_date
+        old_item = existing_items[commit_url]
+        pub_date = old_item.find("pubDate").text
+        pub_datetime = parsedate_to_datetime(pub_date)
     else:
-        item = ET.Element("item")
-        ET.SubElement(item, "title").text = relative_path
-        ET.SubElement(item, "link").text = commit_url
-        ET.SubElement(item, "guid").text = commit_url
-        ET.SubElement(item, "pubDate").text = current_date
-        channel.append(item)
+        # New item - use current time
+        pub_datetime = datetime.utcnow()
 
-# Sort all items by pubDate descending
-def get_pub_date(item):
-    pub_date_text = item.find("pubDate").text
-    dt = parsedate_to_datetime(pub_date_text)
-    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+    item = ET.Element("item")
+    ET.SubElement(item, "title").text = relative_path
+    ET.SubElement(item, "link").text = commit_url
+    ET.SubElement(item, "guid").text = commit_url
+    ET.SubElement(item, "pubDate").text = pub_datetime.strftime("%a, %d %b %Y %H:%M:%S GMT")
 
-items = channel.findall("item")
-items.sort(key=get_pub_date, reverse=True)
+    new_items.append((pub_datetime, item))
+
+# Sort items newest-first by pubDate
+new_items.sort(key=lambda x: x[0], reverse=True)
 
 # Clear old items and re-append in sorted order
-for item in channel.findall("item"):
-    channel.remove(item)
-for item in items:
+for old_item in channel.findall("item"):
+    channel.remove(old_item)
+for _, item in new_items:
     channel.append(item)
 
 # Save the updated RSS feed
 tree = ET.ElementTree(root)
 tree.write(rss_file, encoding="UTF-8", xml_declaration=True)
 
-print(f"Generated RSS feed with {len(items)} article(s).")
+print(f"Generated RSS feed with {len(new_items)} articles.")
