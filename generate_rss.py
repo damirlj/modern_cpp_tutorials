@@ -78,8 +78,7 @@ try:
     root = tree.getroot()
     channel = root.find("channel")
     existing_items = {
-        item.find("link").text: item.find("pubDate").text
-        for item in channel.findall("item")
+        item.find("link").text: item for item in channel.findall("item")
     }
 except ET.ParseError:
     print("Error parsing the existing RSS file. The file might be corrupted.")
@@ -102,26 +101,25 @@ for pdf in sorted(pdf_files):
 
     # Check if the item already exists
     if link in existing_items:
-        pub_date = existing_items[link]
+        item = existing_items[link]
+        pub_date = item.find("pubDate").text
 
         # Check if the file is updated based on modification time
         if is_file_updated(pdf, pub_date):
             pub_date = current_date  # Update pubDate for modified items
+            item.find("pubDate").text = pub_date  # Update the pubDate of the existing item
             changes_made = True
     else:
         # Assign the current date for new items
         pub_date = current_date
+        item = ET.Element("item")
+        ET.SubElement(item, "title").text = relative_path
+        ET.SubElement(item, "link").text = link
+        ET.SubElement(item, "guid").text = link
+        ET.SubElement(item, "pubDate").text = pub_date
+        channel.append(item)
         changes_made = True
-
-    # Create or update the item
-    item = ET.Element("item")
-    ET.SubElement(item, "title").text = relative_path
-    ET.SubElement(item, "link").text = link
-    ET.SubElement(item, "guid").text = link
-    ET.SubElement(item, "pubDate").text = pub_date
-
-    # Add the item to the channel
-    channel.append(item)
+        print(f"Adding new file: {pdf}")
 
 # Save the updated RSS feed if changes were made
 if changes_made:
