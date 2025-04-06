@@ -1,5 +1,6 @@
 import os
 import xml.etree.ElementTree as ET
+from xml.dom import minidom
 from datetime import datetime
 
 # Define the RSS file and folder containing articles
@@ -30,23 +31,66 @@ def is_file_updated(file_path, existing_pub_date):
     """
     file_mod_time = os.path.getmtime(file_path)
     existing_time = datetime.strptime(existing_pub_date, "%a, %d %b %Y %H:%M:%S GMT").timestamp()
-    return file_mod_time > existing_time
+    updated = file_mod_time > existing_time
+    if updated:
+        print(f"File {file_path} has been updated (mod_time: {file_mod_time}, existing_time: {existing_time})")
+    return updated
+
+def write_rss_feed(file_path, tree, channel):
+    """
+    Write the updated RSS feed to the file with proper formatting using minidom.
+    :param file_path: Path to the RSS file.
+    :param tree: ElementTree object of the XML.
+    :param channel: Channel element containing the items.
+    """
+    # Sort the items by pubDate in descending order (latest first)
+    channel_items = sorted(channel.findall("item"), key=lambda x: x.find("pubDate").text, reverse=True)
+
+    # Rebuild the channel with sorted items
+    channel.clear()
+    for item in channel_items:
+        channel.append(item)
+
+    # Save the updated RSS feed to a string and format using minidom
+    xml_str = ET.tostring(tree.getroot(), encoding="utf-8", method="xml").decode("utf-8")
+    
+    # Parse the XML string with minidom for proper indentation
+    xml_str = minidom.parseString(xml_str).toprettyxml(indent="  ")
+
+    # We need to make sure the first line only contains the XML declaration, without extra blank lines
+    xml_lines = xml_str.splitlines()
+    xml_lines = [line for line in xml_lines if line.strip()]  # Remove empty lines
+    xml_str = '\n'.join(xml_lines)
+
+    # Write the formatted XML back to the file
+    with open(file_path, 'w', encoding="utf-8") as file:
+        file.write(xml_str)
+
+    print("RSS feed updated.")
 
 # Check if the RSS file exists, and create it if necessary
 if not os.path.exists(rss_file):
     create_empty_rss_file(rss_file)
 
 # Load the existing RSS feed
-tree = ET.parse(rss_file)
-root = tree.getroot()
-channel = root.find("channel")
-existing_items = {
-    item.find("link").text: item.find("pubDate").text
-    for item in channel.findall("item")
-}
+try:
+    tree = ET.parse(rss_file)
+    root = tree.getroot()
+    channel = root.find("channel")
+    existing_items = {
+        item.find("link").text: item.find("pubDate").text
+        for item in channel.findall("item")
+    }
+except ET.ParseError:
+    print("Error parsing the existing RSS file. The file might be corrupted.")
+    exit(1)
 
-# Get the list of PDF files in the docs folder
-pdf_files = [os.path.join(docs_folder, f) for f in os.listdir(docs_folder) if f.endswith(".pdf")]
+# Get the list of PDF files in the docs folder (including subfolders)
+pdf_files = [
+    os.path.join(root, f)
+    for root, dirs, files in os.walk(docs_folder)
+    for f in files if f.lower().endswith(".pdf")
+]
 
 # Track changes
 changes_made = False
@@ -60,7 +104,7 @@ for pdf in sorted(pdf_files):
     if link in existing_items:
         pub_date = existing_items[link]
 
-        # Use the separate function to check if the file is updated
+        # Check if the file is updated based on modification time
         if is_file_updated(pdf, pub_date):
             pub_date = current_date  # Update pubDate for modified items
             changes_made = True
@@ -79,18 +123,8 @@ for pdf in sorted(pdf_files):
     # Add the item to the channel
     channel.append(item)
 
-# Sort items in descending order by pubDate (newest first)
-items = channel.findall("item")
-sorted_items = sorted(items, key=lambda x: datetime.strptime(x.find("pubDate").text, "%a, %d %b %Y %H:%M:%S GMT"), reverse=True)
-
-# Clear existing items and add the sorted items
-channel.clear()
-for item in sorted_items:
-    channel.append(item)
-
-# Save the updated RSS feed
+# Save the updated RSS feed if changes were made
 if changes_made:
-    tree.write(rss_file, encoding="utf-8", xml_declaration=True)
-    print("RSS feed updated.")
+    write_rss_feed(rss_file, tree, channel)
 else:
     print("No changes made to the RSS feed.")
