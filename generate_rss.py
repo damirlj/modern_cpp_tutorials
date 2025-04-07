@@ -82,21 +82,21 @@ except ET.ParseError:
     print("Failed to parse existing RSS file.")
     exit(1)
 
-# Collect .pdf files
-pdf_files = [
+# Collect files
+docu_files = [
     os.path.join(root, file)
     for root, _, files in os.walk(docs_folder)
-    for file in files if file.endswith(".pdf")
+    for file in files if file.endswith((".pdf", ".md"))
 ]
 
 changes_made = False
 
-for pdf in pdf_files:
-    relative_path = os.path.relpath(pdf, start=docs_folder)
+for docu in docu_files:
+    relative_path = os.path.relpath(docu, start=docs_folder)
     relative_path = relative_path.replace(os.sep, "/")
     link = f"https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/{relative_path}"
-    title = os.path.splitext(os.path.basename(pdf))[0].replace("_", " ")
-    mod_time = get_effective_mod_time(pdf)
+    title = os.path.splitext(os.path.basename(docu))[0].replace("_", " ")
+    mod_time = get_effective_mod_time(docu)
     pub_date = format_rss_date(mod_time)
 
     if link in existing_items:
