@@ -2,12 +2,12 @@
 <rss version="2.0">
   <channel>
     <item>
-      <title>Callables__C++_vs_Java</title>
+      <title>Callables  C++ vs Java</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/basics/Callables__C++_vs_Java.pdf</link>
       <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
     </item>
     <item>
-      <title>Lock-free_programming__MPSC_queue</title>
+      <title>Lock-free programming  MPSC queue</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/memory/Lock-free_programming__MPSC_queue.pdf</link>
       <pubDate>Tue, 25 Feb 2025 21:00:02 GMT</pubDate>
     </item>
@@ -22,7 +22,7 @@
       <pubDate>Sat, 11 Jan 2025 09:51:51 GMT</pubDate>
     </item>
     <item>
-      <title>Coroutines__producer-consumer</title>
+      <title>Coroutines  producer-consumer</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/C++20/Coroutines__producer-consumer.pdf</link>
       <pubDate>Sat, 26 Oct 2024 12:35:55 GMT</pubDate>
     </item>
@@ -32,7 +32,7 @@
       <pubDate>Sat, 26 Oct 2024 12:35:55 GMT</pubDate>
     </item>
     <item>
-      <title>Thread__Attributes</title>
+      <title>Thread  Attributes</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/android/Thread__Attributes.pdf</link>
       <pubDate>Thu, 10 Oct 2024 06:12:48 GMT</pubDate>
     </item>

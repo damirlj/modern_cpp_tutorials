@@ -95,8 +95,7 @@ for pdf in pdf_files:
     relative_path = os.path.relpath(pdf, start=docs_folder)
     relative_path = relative_path.replace(os.sep, "/")
     link = f"https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/{relative_path}"
-    title = os.path.splitext(os.path.basename(pdf))[0]
-
+    title = os.path.splitext(os.path.basename(pdf))[0].replace("_", " ")
     mod_time = get_effective_mod_time(pdf)
     pub_date = format_rss_date(mod_time)
 
