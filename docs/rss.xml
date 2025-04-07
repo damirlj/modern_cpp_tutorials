@@ -9,167 +9,167 @@
     <item>
       <title>Lock-free_programming__MPSC_queue</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/memory/Lock-free_programming__MPSC_queue.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Tue, 25 Feb 2025 21:00:02 GMT</pubDate>
     </item>
     <item>
       <title>Coroutines - part 2</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/C++20/Coroutines - part 2.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Mon, 27 Jan 2025 13:22:17 GMT</pubDate>
     </item>
     <item>
       <title>Coroutines</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/C++20/Coroutines.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Sat, 11 Jan 2025 09:51:51 GMT</pubDate>
     </item>
     <item>
       <title>Coroutines__producer-consumer</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/C++20/Coroutines__producer-consumer.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Sat, 26 Oct 2024 12:35:55 GMT</pubDate>
     </item>
     <item>
       <title>Observer</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/desing patterns/Observer.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Sat, 26 Oct 2024 12:35:55 GMT</pubDate>
     </item>
     <item>
       <title>Thread__Attributes</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/android/Thread__Attributes.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Thu, 10 Oct 2024 06:12:48 GMT</pubDate>
     </item>
     <item>
       <title>ABI - overview</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/basics/ABI - overview.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Wed, 09 Oct 2024 19:05:01 GMT</pubDate>
     </item>
     <item>
       <title>Singleton</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/desing patterns/Singleton.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Mon, 02 Sep 2024 16:53:21 GMT</pubDate>
     </item>
     <item>
       <title>Kotlin - builder pattern</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/android/Kotlin/Kotlin - builder pattern.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Fri, 23 Aug 2024 15:17:56 GMT</pubDate>
     </item>
     <item>
       <title>Kotlin - fold expressions</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/android/Kotlin/Kotlin - fold expressions.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Mon, 19 Aug 2024 07:54:25 GMT</pubDate>
     </item>
     <item>
       <title>Kotlin - functional programming</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/android/Kotlin/Kotlin - functional programming.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Sun, 18 Aug 2024 11:02:05 GMT</pubDate>
     </item>
     <item>
       <title>Locking policy</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/C++20/Locking policy.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Sat, 20 Jul 2024 20:11:03 GMT</pubDate>
     </item>
     <item>
       <title>Arrays</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/basics/Arrays.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Fri, 31 May 2024 07:37:34 GMT</pubDate>
     </item>
     <item>
       <title>Bits</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/basics/Bits.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Thu, 30 May 2024 18:01:53 GMT</pubDate>
     </item>
     <item>
       <title>Enums</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/basics/Enums.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Thu, 30 May 2024 18:01:53 GMT</pubDate>
     </item>
     <item>
       <title>Invariant, covariant and contravariant</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/basics/Invariant, covariant and contravariant.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Thu, 30 May 2024 18:01:53 GMT</pubDate>
     </item>
     <item>
       <title>Range-based for loop</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/basics/Range-based for loop.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Thu, 30 May 2024 18:01:53 GMT</pubDate>
     </item>
     <item>
       <title>Strings</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/basics/Strings.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Thu, 30 May 2024 18:01:53 GMT</pubDate>
     </item>
     <item>
       <title>vtable#2</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/basics/vtable#2.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Thu, 30 May 2024 18:01:53 GMT</pubDate>
     </item>
     <item>
       <title>vtable</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/basics/vtable.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Thu, 30 May 2024 18:01:53 GMT</pubDate>
     </item>
     <item>
       <title>Local allocator</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/memory/Local allocator.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Thu, 30 May 2024 18:01:53 GMT</pubDate>
     </item>
     <item>
       <title>Lock-free programming, part 1</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/memory/Lock-free programming, part 1.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Thu, 30 May 2024 18:01:53 GMT</pubDate>
     </item>
     <item>
       <title>Memory alignment</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/memory/Memory alignment.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Thu, 30 May 2024 18:01:53 GMT</pubDate>
     </item>
     <item>
       <title>RxAndroid</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/android/RxAndroid.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Fri, 26 Apr 2024 16:14:49 GMT</pubDate>
     </item>
     <item>
       <title>Ranges</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/C++20/Ranges.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Fri, 02 Feb 2024 10:55:28 GMT</pubDate>
     </item>
     <item>
       <title>Concepts</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/C++20/Concepts.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Sat, 27 Jan 2024 08:40:09 GMT</pubDate>
     </item>
     <item>
       <title>Asynchronous programming</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/C++20/Asynchronous programming.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Sun, 07 Jan 2024 18:34:01 GMT</pubDate>
     </item>
     <item>
       <title>Factory method</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/desing patterns/Factory method.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Tue, 28 Nov 2023 07:46:16 GMT</pubDate>
     </item>
     <item>
       <title>Expression templates</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/desing patterns/Expression templates.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Mon, 27 Nov 2023 19:55:56 GMT</pubDate>
     </item>
     <item>
       <title>JNI Interface</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/android/JNI Interface.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Sun, 17 Sep 2023 15:34:00 GMT</pubDate>
     </item>
     <item>
       <title>Visitor</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/desing patterns/Visitor.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Sat, 17 Jun 2023 07:25:13 GMT</pubDate>
     </item>
     <item>
       <title>Bridge design pattern</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/desing patterns/Bridge design pattern.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Sat, 10 Jun 2023 08:51:00 GMT</pubDate>
     </item>
     <item>
       <title>Builder</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/desing patterns/Builder.pdf</link>
-      <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
+      <pubDate>Sat, 10 Jun 2023 08:51:00 GMT</pubDate>
     </item>
   </channel>
 </rss>
