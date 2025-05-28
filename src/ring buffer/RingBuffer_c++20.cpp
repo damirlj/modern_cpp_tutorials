@@ -22,17 +22,17 @@
 
 
 
-namespace utils
+namespace utils::rb
 { 
     template <std::size_t N>
-    constexpr bool is_power_of_2 = (N & (N - 1)) == 0;
+    constexpr bool is_power_of_2 = (N > 0) and (N & (N - 1)) == 0;
 
     template <typename Byte>
     static constexpr bool is_byte
-        = std::is_same_v<Byte, unsigned char> || std::is_same_v<Byte, std::uint8_t> || std::is_same_v<Byte, std::byte>;
+        = std::is_same_v<Byte, unsigned char> or std::is_same_v<Byte, std::uint8_t> or std::is_same_v<Byte, std::byte>;
 
     template <typename T, std::size_t BlockSize>
-    requires is_byte<T> && is_power_of_2<BlockSize>
+    requires is_power_of_2<BlockSize>
     struct block final
     {
         std::size_t size_;  // the size - number of actually stored data
@@ -54,7 +54,7 @@ namespace utils
      * @tparam BlockSize The size of the each slot, in elements of type T
      */
     template <typename T, std::size_t Blocks, std::size_t BlockSize>
-    requires is_byte<T> && is_power_of_2<Blocks>
+    requires is_power_of_2<Blocks>
     class RingBuffer
     {
 
@@ -90,8 +90,7 @@ namespace utils
                 auto& block = blocks_[writeIndex_];
                 block.size_ = written;
 
-                auto&& col = std::forward<Collection>(collection);
-                std::copy(col.cbegin(), std::next(col.cbegin(), written), block.data_.begin());
+                std::copy_n(std::begin(std::forward<Collection>(collection)), written, block.data_.begin());
                 writeIndex_ = (writeIndex_ + 1) & MASK;
             }
             
@@ -178,6 +177,7 @@ namespace utils
 
                 if (writeIndex_ == readIndex_) return false;
                 std::invoke(std::forward<Func>(func), blocks_[readIndex_]);
+                readIndex_ = (readIndex_ + 1) & MASK;
             }  // unlock
 
             writeSemaphore_.release();
@@ -255,7 +255,7 @@ namespace test {
     {
         using namespace std::chrono_literals;
 
-        using ring_buffer_t = utils::RingBuffer<A, 5, 10>;
+        using ring_buffer_t = utils::rb::RingBuffer<A, 8, 16>;
 
         std::shared_ptr<ring_buffer_t> ringBuffer = std::make_shared<ring_buffer_t>();
         std::stop_source stop;
