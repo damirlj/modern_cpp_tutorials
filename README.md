@@ -1276,8 +1276,8 @@ class LoggingImpl final : public Logging
         }
 
     private:
-        const T& m_obj; // unmutable object to log
-        const Logger& m_logger; // unmutable logger itself
+        const T& m_obj; // immutable object to log
+        const Logger& m_logger; // immutable logger itself
 };
 ```
 Actually, any type candidate, would need eventually to adapt its dumping signature, in order to be invoked  
