@@ -2,6 +2,11 @@
 <rss version="2.0">
   <channel>
     <item>
+      <title>Coroutine frame storage</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/memory/Coroutine_frame_storage.pdf</link>
+      <pubDate>Fri, 26 Jun 2026 11:10:30 GMT</pubDate>
+    </item>
+    <item>
       <title>Callables  C++ vs Java</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/basics/Callables__C++_vs_Java.pdf</link>
       <pubDate>Mon, 07 Apr 2025 06:13:42 GMT</pubDate>
