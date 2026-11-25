@@ -2,6 +2,11 @@
 <rss version="2.0">
   <channel>
     <item>
+      <title>Meeting C++ 2026 - Coroutines (wonder)land</title>
+      <link>https://github.com/damirlj/modern_cpp_tutorials/tree/main/docs/Meeting C++ 2026</link>
+      <pubDate>Wed, 25 Nov 2026 17:32:38 GMT</pubDate>
+    </item>
+    <item>
       <title>Coroutine frame storage</title>
       <link>https://github.com/damirlj/modern_cpp_tutorials/blob/main/docs/memory/Coroutine_frame_storage.pdf</link>
       <pubDate>Fri, 26 Jun 2026 11:11:30 GMT</pubDate>
